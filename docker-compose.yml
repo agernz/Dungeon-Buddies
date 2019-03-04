@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: vg411
+      MYSQL_DATABASE: myDB
+      LANG: C.UTF-8
+    volumes:
+      - "./data:/var/lib/mysql:rw"
+  web:
+    build: .
+    command: python veryGoodSite/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
