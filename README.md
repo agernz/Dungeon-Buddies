@@ -3,19 +3,19 @@ Final project for CS411. Our group is creating a web based game!
 
 ## Requirements
 docker:
-'''bash
+```bash
 sudo apt install docker.io
-'''
+```
 docker-compose: https://docs.docker.com/compose/install/
 
 ## Usage
 After cloning the repo, open a terminal and navigate to the project folder.
 First build the containers using docker-compose:
-'''bash
+```bash
 sudo docker-compose up -d --build
-'''
+```
 
 To run the container:
-'''bash
+```bash
 sudo docker-compose up
-'''
+```
