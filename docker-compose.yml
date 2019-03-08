@@ -12,7 +12,7 @@ services:
       - "./data:/var/lib/mysql:rw"
   web:
     build: .
-    command: python veryGoodSite/manage.py runserver 0.0.0.0:8000
+    command: uwsgi uwsgi.ini
     volumes:
       - .:/code
     ports:
