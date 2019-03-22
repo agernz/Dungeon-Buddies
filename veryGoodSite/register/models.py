@@ -5,10 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 class goodManager(BaseUserManager):
 
     def create_user(self, username, password):
-        user = self.model(username=username)
-        user.set_password(password)
-        user.save()
-        return user
+        pass
 
     def create_superuser(self, email, password):
         pass

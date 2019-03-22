@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.db import connection, IntegrityError
 from register.forms.RegisterForm import RegisterForm, SignInForm
 
@@ -10,6 +10,9 @@ BACKEND = 'register.authenticate.authBackend'
 
 
 def index(request):
+    if request.user.is_authenticated:
+        messages.info(request, "You are logged in")
+        return redirect('game-index')
     form = RegisterForm()
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -37,6 +40,9 @@ def index(request):
 
 
 def loginUser(request):
+    if request.user.is_authenticated:
+        messages.info(request, "You are already logged in")
+        return redirect('game-index')
     form = SignInForm()
     if request.method == 'POST':
         form = SignInForm(request.POST)
@@ -51,6 +57,13 @@ def loginUser(request):
             else:
                 messages.warning(request, "Incorrect username or password!")
     return render(request, 'register/login.html', {'form': form})
+
+
+def logoutUser(request):
+    if request.user.is_authenticated:
+        logout(request)
+        messages.success(request, "You have been logged out")
+    return redirect('game-index')
 
 
 def createNewAccount(username, password, characterName):

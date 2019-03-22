@@ -2,7 +2,12 @@
 {% block content %}
   <h1>HOME PAGE</h1>
   <div>
-    <a href="{% url 'register-index' %}">Register</a>
-    <a href="{% url 'register-login' %}">Sign In</a>
+    {% if is_auth %}
+      <a href="{% url 'register-logout' %}">Logout</a>
+      <a href="{% url 'game-guild' %}">Guild</a>
+    {% else %}
+      <a href="{% url 'register-index' %}">Register</a>
+      <a href="{% url 'register-login' %}">Sign In</a>
+    {% endif %}
   </div>
 {% endblock content %}
