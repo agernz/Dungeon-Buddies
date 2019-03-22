@@ -110,6 +110,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'register.authenticate.authBackend',
+]
+
+AUTH_USER_MODEL = 'register.goodUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
