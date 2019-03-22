@@ -14,3 +14,10 @@ class RegisterForm(forms.Form):
                                     max_length=30,
                                     validators=[onlyCharNum])
     password = forms.CharField(min_length=8, max_length=120)
+
+
+class SignInForm(forms.Form):
+    username = forms.CharField(label="Username",
+                               max_length=30,
+                               validators=[onlyCharNum])
+    password = forms.CharField(min_length=8, max_length=120)
