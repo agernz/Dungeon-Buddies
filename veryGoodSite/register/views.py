@@ -3,7 +3,8 @@ from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login, logout
 from django.db import connection, IntegrityError
-from register.forms.RegisterForm import RegisterForm, SignInForm
+from register.forms.RegisterForm import RegisterForm
+from register.forms.SignInForm import SignInForm
 
 
 BACKEND = 'register.authenticate.authBackend'
