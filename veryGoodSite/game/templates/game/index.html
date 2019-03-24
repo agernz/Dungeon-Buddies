@@ -2,7 +2,7 @@
 {% block content %}
   <h1>HOME PAGE</h1>
   <div>
-    {% if is_auth %}
+    {% if user.is_authenticated %}
       <a href="{% url 'register-logout' %}">Logout</a>
       <a href="{% url 'game-guild' %}">Guild</a>
     {% else %}

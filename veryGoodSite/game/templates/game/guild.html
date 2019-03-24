@@ -1,0 +1,24 @@
+{% extends "register/base.html" %}
+{% block content %}
+  <h1>Join Guild</h1>
+  <div>
+    {% for guild in guilds %}
+      <ul>
+        <li>{{ guild }} <a href="#">join</a></li>
+      </ul>
+    {% endfor %}
+  </div>
+  <h1>Create Guild</h1>
+  <div class="content-section">
+    <form method="POST">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <legend class="border-bottom mb-4:"></legend>
+        {{ form|crispy }}
+      </fieldset>
+      <div class="form-group">
+        <button class="btn btn-outline-info" type="submit">submit</button>
+      </div>
+    </form>
+  </div>
+{% endblock content %}

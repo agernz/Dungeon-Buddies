@@ -1,11 +1,16 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
 
 def index(request):
-    return render(request, 'game/index.html',
-                  {'is_auth': request.user.is_authenticated})
+    return render(request, 'game/index.html')
 
 
+@login_required
 def guild(request):
-    return render(request, 'game/index.html',
-                  {'is_auth': request.user.is_authenticated})
+    guilds = ['abc', '123']
+    context = {
+        'guilds': guilds,
+        'form': guildForm()
+    }
+    return render(request, 'game/guild.html', context)
