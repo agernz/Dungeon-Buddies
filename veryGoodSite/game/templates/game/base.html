@@ -18,7 +18,13 @@
 
   <title>Dungeon Buddies, Monster Slayers</title>
 </head>
-{% block menu %}{% endblock %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
 <body>
   <div class="container mt-2">
     {% if messages %}

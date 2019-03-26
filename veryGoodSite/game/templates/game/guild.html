@@ -1,4 +1,12 @@
-{% extends "register/base.html" %}
+{% extends "game/base.html" %}
+{% load crispy_forms_tags %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
 {% block content %}
   <h1>Join a Guild</h1>
   <table class="table">
@@ -19,13 +27,6 @@
       {% endfor %}
     </tbody>
   </table>
-  <!-- <div>
-    {% for guild in guilds %}
-      <ul>
-        <li>{{ guild }} <a href="#">join</a></li>
-      </ul>
-    {% endfor %}
-  </div> -->
   <h1>Create Guild</h1>
   <div class="content-section">
     <form method="POST">

@@ -44,6 +44,7 @@ CREATE TABLE Guild (
 CREATE TABLE Member (
   userID INT UNSIGNED NOT NULL,
   guildID INT UNSIGNED NOT NULL,
+  pending SMALLINT UNSIGNED default 1,
   admin SMALLINT UNSIGNED default 0,
   PRIMARY KEY (userID),
   FOREIGN KEY (userID) REFERENCES Account (userID)
@@ -51,4 +52,3 @@ CREATE TABLE Member (
   FOREIGN KEY (guildID) REFERENCES Guild (guildID)
     ON DELETE CASCADE
 );
-
