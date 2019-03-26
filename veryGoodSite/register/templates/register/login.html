@@ -1,5 +1,6 @@
-{% extends "register/base.html" %}
+{% extends "game/base.html" %}
 {% load crispy_forms_tags %}
+{% block menu %}{% include "game/navbar-logged-out.html" %}{% endblock %}
 {% block content %}
 <h1>Sign In</h1>
 <div class="content-section">
@@ -10,12 +11,12 @@
       {{ form|crispy }}
     </fieldset>
     <div class="form-group">
-      <button class="btn btn-outline-info" type="submit">sign in</button>
+      <button class="btn btn-outline-info" type="submit">Sign In</button>
     </div>
   </form>
   <div class="border-top pt-3">
     <small class="text-muted">
-      Dont have an account? <a href="{% url 'register-index' %}">Register</a> 
+      Dont have an account? <a href="{% url 'register-index' %}">Register</a>
     </small>
   </div>
 </div>

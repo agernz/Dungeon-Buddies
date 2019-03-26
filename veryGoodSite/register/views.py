@@ -29,11 +29,11 @@ def index(request):
                                     username=username, password=password)
                 login(request, user, backend=BACKEND)
                 messages.success(request,
-                                 "Successfully created account for {0}"
+                                 "Successfully created account for {0}."
                                  .format(username))
                 return redirect('game-index')
             elif result == 0:
-                messages.warning(request, "Username: {0} is already taken"
+                messages.warning(request, "Username: {0} is already taken."
                                  .format(username))
             else:
                 messages.warning(request, "Something went wrong :(")
@@ -42,7 +42,7 @@ def index(request):
 
 def loginUser(request):
     if request.user.is_authenticated:
-        messages.info(request, "You are already logged in")
+        messages.info(request, "You are already logged in.")
         return redirect('game-index')
     form = SignInForm()
     if request.method == 'POST':
@@ -63,7 +63,7 @@ def loginUser(request):
 def logoutUser(request):
     if request.user.is_authenticated:
         logout(request)
-        messages.success(request, "You have been logged out")
+        messages.success(request, "You have been logged out.")
     return redirect('game-index')
 
 

@@ -1,13 +1,30 @@
-{% extends "register/base.html" %}
+{% extends "game/base.html" %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
 {% block content %}
-  <h1>HOME PAGE</h1>
   <div>
     {% if user.is_authenticated %}
-      <a href="{% url 'register-logout' %}">Logout</a>
       <a href="{% url 'game-guild' %}">Guild</a>
     {% else %}
-      <a href="{% url 'register-index' %}">Register</a>
-      <a href="{% url 'register-login' %}">Sign In</a>
+      <div class="container h-100">
+        <div class="row align-items-center h-100">
+          <div class="col-lg-8 col-sm colm-md mx-auto mt-3">
+            <div class="jumbotron">
+              <h1 class="display-4">Welcome, Slayer!</h1>
+              <p class="lead">Collect items. Level up. Slay monsters.</p>
+              <hr class="my-4">
+              <p>Dungeon Buddies, Monster Slayers is a simple online RPG. Register today or sign in!</p>
+              <a href="{% url 'register-index' %}" class="btn btn-primary btn-md" >Register</a>
+              <a href="{% url 'register-login' %}" class="btn btn-primary btn-md">Sign In</a>
+            </div>
+          </div>
+        </div>
+      </div>
     {% endif %}
   </div>
 {% endblock content %}
