@@ -15,14 +15,16 @@
         <th scope="col">#</th>
         <th scope="col">Guild Name</th>
         <th scope="col">Number of Members</th>
+        <th scope="col">Join?</th>
       </tr>
     </thead>
     <tbody>
       {% for guild in guilds %}
         <tr>
-          <th scope="row">{{ forloop.counter0 }}, {{ guild }}</th>
-          <td><li>{{ guild }} <a href="#">join</a></li></td>
+          <th scope="row">{{ forloop.counter0 }}</th>
+          <td><li>{{ guild }}</li></td>
           <td>7</td>
+          <td><a href="#">join</a></td>
         </tr>
       {% endfor %}
     </tbody>
@@ -40,5 +42,5 @@
       </div>
     </form>
   </div>
-  
+
 {% endblock content %}
