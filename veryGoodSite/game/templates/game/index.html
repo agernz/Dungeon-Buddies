@@ -1,11 +1,4 @@
 {% extends "game/base.html" %}
-{% block menu %}
-  {% if user.is_authenticated %}
-    {% include "game/navbar-logged-in.html" %}
-  {% else %}
-    {% include "game/navbar-logged-out.html" %}
-  {% endif %}
-{% endblock %}
 {% block content %}
   <div>
     {% if user.is_authenticated %}
