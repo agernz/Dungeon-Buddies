@@ -1,4 +1,5 @@
 {% extends "game/base.html" %}
+{% load static %}
 {% block menu %}
   {% if user.is_authenticated %}
     {% include "game/navbar-logged-in.html" %}
@@ -9,7 +10,35 @@
 {% block content %}
   <div>
     {% if user.is_authenticated %}
-      <a href="{% url 'game-guild' %}">Guild</a>
+      <div class="container ">
+        <div class="row">
+          <div class="col mr-4 bg-light">
+            <div class="container mt-2">
+              <div class="row">
+                <div class="col-4">
+                  <img src="{% static "game/profilepic.png" %}" alt="profile picture" class="img-thumbnail">
+                </div>
+                <div class="col">
+                  <div class="row">
+                    Username
+                  </div>
+                  <div class="row">
+                    Level
+                  </div>
+                  <div class="row">
+                    EXP
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col bg-light">
+            <div class="mt-2">
+              Raids
+            </div>
+          </div>
+        </div>
+      </div>
     {% else %}
       <div class="container h-100">
         <div class="row align-items-center h-100">
