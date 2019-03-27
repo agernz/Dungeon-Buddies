@@ -111,8 +111,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
     'register.authenticate.authBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 AUTH_USER_MODEL = 'register.goodUser'

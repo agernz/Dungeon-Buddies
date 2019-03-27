@@ -74,8 +74,10 @@ def createNewAccount(username, password, characterName):
         c.execute("INSERT INTO Account(username, password, characterName) \
                        VALUES(%s, %s, %s);",
                   [username, password, characterName])
-        c.execute("INSERT INTO register_gooduser(username, password) \
-                       VALUES(%s, %s);", [username, password])
+        c.execute("SELECT userID FROM Account WHERE username=%s;", [username])
+        userID = c.fetchone()[0]
+        c.execute("INSERT INTO register_gooduser(username, userID, password) \
+                       VALUES(%s, %s, %s);", [username, userID, password])
     except IntegrityError:
         success = 0
     except Exception:

@@ -13,26 +13,30 @@ class authBackend:
 
     def get_user(self, user_id):
         c = connection.cursor()
+        user = None
         try:
             c.execute("SELECT username FROM Account WHERE \
                                    userID=%s;", [user_id])
-            user = c.fetchone()
-            return User(user[0])
+            username = c.fetchone()[0]
+            user = User(username=username, userID=user_id)
         except Exception:
-            return None
+            pass
         finally:
             c.close()
+        return user
 
     def getUserFromNamePwd(self, uname, pwd):
         c = connection.cursor()
+        user = None
         try:
-            c.execute("SELECT password FROM Account WHERE \
+            c.execute("SELECT userID, password FROM Account WHERE \
                                    username=%s;", [uname])
-            user = c.fetchone()
-            if not check_password(pwd, user[0]):
+            user_details = c.fetchone()
+            if not check_password(pwd, user_details[1]):
                 return None
-            return User(username=uname)
+            user = User(username=uname, userID=user_details[0])
         except Exception:
-            return None
+            pass
         finally:
             c.close()
+        return user
