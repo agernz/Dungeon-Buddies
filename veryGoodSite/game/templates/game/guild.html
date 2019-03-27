@@ -8,6 +8,29 @@
   {% endif %}
 {% endblock %}
 {% block content %}
+{% if guildName %}
+<h1>{{ guildName }}</h1>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">User</th>
+        <th scope="col">Character</th>
+        <th scope="col">Exp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for member in members %}
+        <tr>
+          <th scope="row">{{ forloop.counter0 }}</th>
+          <td>{{ member.name }}</td>
+          <td>{{ member.charName }}</td>
+          <td>{{ member.exp }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
   <h1>Join a Guild</h1>
   <table class="table">
     <thead>
@@ -22,8 +45,8 @@
       {% for guild in guilds %}
         <tr>
           <th scope="row">{{ forloop.counter0 }}</th>
-          <td>{{ guild }}</td>
-          <td>tbd</td>
+          <td>{{ guild.name }}</td>
+          <td>{{ guild.num_members }}</td>
           <td><a href="#">join</a></td>
         </tr>
       {% endfor %}
@@ -31,7 +54,7 @@
   </table>
   <h1>Create Guild</h1>
   <div class="content-section">
-    <form method="POST">
+    <form action="/guild-create/" method="POST">
       {% csrf_token %}
       <fieldset class="form-group">
         <legend class="border-bottom mb-4:"></legend>
@@ -42,5 +65,6 @@
       </div>
     </form>
   </div>
+{% endif %}
 
 {% endblock content %}
