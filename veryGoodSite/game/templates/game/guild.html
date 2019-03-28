@@ -9,6 +9,7 @@
 {% endblock %}
 {% block content %}
 {% if guildName %}
+<a href="{% url 'game-guild' %}?leave=1">Leave Guild :(</a>
 <h1>{{ guildName }}</h1>
   <table class="table">
     <thead>
@@ -30,6 +31,21 @@
       {% endfor %}
     </tbody>
   </table>
+  {% if is_admin %}
+    <h3>Add Member</h3>
+    <div class="content-section">
+      <form action="{% url 'game-guild-invite' %}" method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+          <legend class="border-bottom mb-4:"></legend>
+          {{ inviteForm|crispy }}
+        </fieldset>
+        <div class="form-group">
+          <button class="btn btn-outline-info" type="submit">Submit</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
 {% else %}
   <h1>Join a Guild</h1>
   <table class="table">
@@ -54,7 +70,7 @@
   </table>
   <h1>Create Guild</h1>
   <div class="content-section">
-    <form action="/guild-create/" method="POST">
+    <form action="{% url 'game-guild-create' %}" method="POST">
       {% csrf_token %}
       <fieldset class="form-group">
         <legend class="border-bottom mb-4:"></legend>

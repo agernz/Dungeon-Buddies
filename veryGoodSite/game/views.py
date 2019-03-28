@@ -4,6 +4,7 @@ from django.db import connection
 from django.contrib import messages
 from django.conf import settings
 from game.forms.GuildForm import GuildForm
+from game.forms.InviteForm import InviteForm
 
 
 def index(request):
@@ -16,6 +17,9 @@ def index(request):
 
 @login_required
 def guildPage(request, form=GuildForm()):
+    leave = request.GET.get('leave')
+    if leave:
+        leaveGuild(request.user.userID)
     guild = getUserGuild(request.user.userID)
     context = {
         'guildName': None,
@@ -26,6 +30,8 @@ def guildPage(request, form=GuildForm()):
     if guild:
         context['guildName'] = guild[1]
         context['members'] = None
+        context['is_admin'] = guild[2]
+        context['inviteForm'] = InviteForm()
     return render(request, 'game/guild.html', context)
 
 
@@ -42,6 +48,17 @@ def createGuild(request):
             else:
                 createNewGuild(request.user.userID, data['guildName'])
     return guildPage(request, form)
+
+
+@login_required
+def guildInvite(request):
+    if request.method == 'POST':
+        form = InviteForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            guild = getUserGuild(request.user.userID)
+            sendGuildInvite(data['userName'], guild[0])
+    return guildPage(request)
 
 
 @login_required
@@ -82,9 +99,10 @@ def getUserGuild(userID):
     c = connection.cursor()
     guild = None
     try:
-        c.execute("SELECT Guild.guildID, Guild.name FROM Account, Guild \
-                  WHERE Account.userID=%s \
-                  AND Guild.guildID=Account.guildID;", [userID])
+        c.execute("SELECT Guild.guildID, Guild.name, Member.admin \
+                  FROM Account, Guild, Member \
+                  WHERE Account.userID=%s AND Member.userID = %s \
+                  AND Guild.guildID=Account.guildID;", [userID, userID])
         guild = c.fetchone()
     except Exception as e:
         if settings.DEBUG:
@@ -92,6 +110,20 @@ def getUserGuild(userID):
     finally:
         c.close()
     return guild
+
+
+def sendGuildInvite(username, guildID):
+    c = connection.cursor()
+    try:
+        c.execute("SELECT userID FROM Account WHERE username=%s", [username])
+        userID = c.fetchone()[0]
+        c.execute("INSERT INTO Member(userID, guildID) values(%s, %s)",
+                  [userID, guildID])
+    except Exception as e:
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
 
 
 def getGuildInvites(userID):
@@ -116,6 +148,19 @@ def getGuildInvites(userID):
     finally:
         c.close()
     return guilds
+
+
+def leaveGuild(userID):
+    c = connection.cursor()
+    try:
+        c.execute("UPDATE Account SET guildID=Null WHERE userID=%s", [userID])
+        c.execute("DELETE FROM Member WHERE userID=%s AND pending=0", [userID])
+        c.execute("DELETE FROM Guild WHERE owner=%s", [userID])
+    except Exception as e:
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
 
 
 def joinGuildMember(userID, guildID):
