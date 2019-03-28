@@ -47,7 +47,7 @@
           <th scope="row">{{ forloop.counter0 }}</th>
           <td>{{ guild.name }}</td>
           <td>{{ guild.num_members }}</td>
-          <td><a href="#">join</a></td>
+          <td><a href="{% url 'game-guild-join' %}?gID={{ guild.gID }}">join</a></td>
         </tr>
       {% endfor %}
     </tbody>
