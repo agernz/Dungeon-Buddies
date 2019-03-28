@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login, logout
 from django.db import connection, IntegrityError
+from django.conf import settings
 from register.forms.RegisterForm import RegisterForm
 from register.forms.SignInForm import SignInForm
 
@@ -80,8 +81,10 @@ def createNewAccount(username, password, characterName):
                        VALUES(%s, %s, %s);", [username, userID, password])
     except IntegrityError:
         success = 0
-    except Exception:
+    except Exception as e:
         success = -1
+        if settings.DEBUG:
+            print(e)
     finally:
         c.close()
     return success
