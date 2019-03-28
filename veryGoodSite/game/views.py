@@ -29,7 +29,7 @@ def guildPage(request, form=GuildForm()):
     }
     if guild:
         context['guildName'] = guild[1]
-        context['members'] = None
+        context['members'] = getGuildMembers(request.user.userID, guild[0])
         context['is_admin'] = guild[2]
         context['inviteForm'] = InviteForm()
     return render(request, 'game/guild.html', context)
@@ -112,12 +112,45 @@ def getUserGuild(userID):
     return guild
 
 
+def getGuildMembers(userID, guildID):
+    c = connection.cursor()
+    members = []
+    memberInfo = {
+        "name": "",
+        "charName": "",
+        "exp": ""
+    }
+    try:
+        c.execute("SELECT username, characterName, experience, temp.num_items \
+            FROM (SELECT Account.userID, username, \
+                  characterName, experience, \
+                  COUNT(Inventory.userID) as num_items \
+                  FROM Account LEFT JOIN Inventory \
+                  ON Account.userID=Inventory.userID \
+                  GROUP BY Account.userID) as temp \
+            WHERE temp.userID IN ( \
+              SELECT userID \
+              FROM Member as m \
+              WHERE m.guildID=%s) \
+            ORDER BY experience;", [guildID])
+        memberInfo = c.fetchall()
+        for member in memberInfo:
+            members.append({"name": member[0], "charName": member[1],
+                            "exp": member[2], "num_items": member[3]})
+    except Exception as e:
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
+    return members
+
+
 def sendGuildInvite(username, guildID):
     c = connection.cursor()
     try:
-        c.execute("SELECT userID FROM Account WHERE username=%s", [username])
+        c.execute("SELECT userID FROM Account WHERE username=%s;", [username])
         userID = c.fetchone()[0]
-        c.execute("INSERT INTO Member(userID, guildID) values(%s, %s)",
+        c.execute("INSERT INTO Member(userID, guildID) values(%s, %s);",
                   [userID, guildID])
     except Exception as e:
         if settings.DEBUG:
@@ -153,9 +186,9 @@ def getGuildInvites(userID):
 def leaveGuild(userID):
     c = connection.cursor()
     try:
-        c.execute("UPDATE Account SET guildID=Null WHERE userID=%s", [userID])
-        c.execute("DELETE FROM Member WHERE userID=%s AND pending=0", [userID])
-        c.execute("DELETE FROM Guild WHERE owner=%s", [userID])
+        c.execute("UPDATE Account SET guildID=Null WHERE userID=%s;", [userID])
+        c.execute("DELETE FROM Member WHERE userID=%s AND pending=0;", [userID])
+        c.execute("DELETE FROM Guild WHERE owner=%s;", [userID])
     except Exception as e:
         if settings.DEBUG:
             print(e)
@@ -166,7 +199,7 @@ def leaveGuild(userID):
 def joinGuildMember(userID, guildID):
     c = connection.cursor()
     try:
-        c.execute("DELETE FROM Member WHERE userID=%s", [userID])
+        c.execute("DELETE FROM Member WHERE userID=%s;", [userID])
         c.execute("INSERT INTO Member(userID, guildID, pending) \
                        VALUES(%s, %s, 0);",
                   [userID, guildID])
@@ -182,11 +215,11 @@ def joinGuildMember(userID, guildID):
 def createNewGuild(userID, guildName):
     c = connection.cursor()
     try:
-        c.execute("DELETE FROM Member WHERE userID=%s", [userID])
+        c.execute("DELETE FROM Member WHERE userID=%s;", [userID])
         c.execute("INSERT INTO Guild(name, owner) \
                        VALUES(%s, %s);",
                   [guildName, userID])
-        c.execute("SELECT guildID FROM Guild WHERE owner=%s", [userID])
+        c.execute("SELECT guildID FROM Guild WHERE owner=%s;", [userID])
         guildID = c.fetchone()[0]
         c.execute("INSERT INTO Member(userID, guildID, pending, admin) \
                        VALUES(%s, %s, 0, 1);",
