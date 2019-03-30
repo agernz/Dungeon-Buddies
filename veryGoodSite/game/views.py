@@ -131,7 +131,7 @@ def getGuildMembers(userID, guildID):
             WHERE temp.userID IN ( \
               SELECT userID \
               FROM Member as m \
-              WHERE m.guildID=%s) \
+              WHERE m.guildID=%s AND m.pending=0) \
             ORDER BY experience;", [guildID])
         memberInfo = c.fetchall()
         for member in memberInfo:
