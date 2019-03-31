@@ -297,5 +297,3 @@ def raidPage(request):
 
 
     return render(request, 'game/raid.html')
-
-def
