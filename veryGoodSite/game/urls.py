@@ -7,4 +7,5 @@ urlpatterns = [
     path('guild-create/', views.createGuild, name='game-guild-create'),
     path('guild-invite/', views.guildInvite, name='game-guild-invite'),
     path('guild-join/', views.joinGuild, name='game-guild-join'),
+    path('stats/', views.statsPage, name='game-stats')
 ]
