@@ -8,4 +8,5 @@ urlpatterns = [
     path('guild-invite/', views.guildInvite, name='game-guild-invite'),
     path('guild-join/', views.joinGuild, name='game-guild-join'),
     path('raid/', views.raidPage, name='game-raid'),
+    path('stats/', views.statsPage, name='game-stats')
 ]

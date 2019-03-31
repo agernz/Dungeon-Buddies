@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.conf import settings
 from game.forms.GuildForm import GuildForm
 from game.forms.InviteForm import InviteForm
+import re
 
 
 def index(request):
@@ -34,6 +35,23 @@ def guildPage(request, form=GuildForm()):
         context['inviteForm'] = InviteForm()
     return render(request, 'game/guild.html', context)
 
+@login_required
+def statsPage(request):
+    user = getUserInfo(request.user.userID, request.user.username)
+    context = {
+        'characterName': None,
+        'experience': None,
+        'gold': None,
+        'top100': None,
+        'rank': None
+    }
+    if user:
+        context['characterName'] = user['charName']
+        context['experience'] = user['exp']
+        context['gold'] = user['gold']
+        context['top100'] = getTop100()
+        context['rank'] = getUserRank(request.user.userID)
+    return render(request, 'game/stats.html', context)
 
 @login_required
 def createGuild(request):
@@ -71,7 +89,6 @@ def joinGuild(request):
         joinGuildMember(request.user.userID, request.GET.get('gID'))
     return guildPage(request)
 
-
 def getUserInfo(userID, uname):
     c = connection.cursor()
     userInfo = {
@@ -94,6 +111,25 @@ def getUserInfo(userID, uname):
         c.close()
     return userInfo
 
+def getUserRank(userID):
+    c = connection.cursor()
+    rank = None
+    try:
+        c.execute(" SELECT ranking.gold_rank \
+                    FROM (  SELECT A.userID, A.gold, COUNT(B.gold) as gold_rank \
+                            FROM Account A, Account B \
+                            WHERE A.gold < B.gold OR (A.gold = B.gold AND A.userID = B.userID) \
+                            GROUP BY A.userID, A.gold \
+                            ORDER BY A.gold DESC, A.userID DESC) as ranking \
+                    WHERE ranking.userID=%s;", [userID])
+        rank = c.fetchone()
+    except Exception as e:
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
+    print(type(rank))
+    return rank[0]
 
 def getUserGuild(userID):
     c = connection.cursor()
@@ -110,6 +146,30 @@ def getUserGuild(userID):
     finally:
         c.close()
     return guild
+
+def getTop100():
+    c = connection.cursor()
+    accounts = []
+    accountInfo = {
+        "username": "",
+        "charName": "",
+        "exp": "",
+        "gold": ""
+    }
+    try:
+        c.execute(" SELECT username, characterName, experience, gold \
+                    FROM Account \
+                    ORDER BY gold desc limit 100;")
+        accountInfo = c.fetchall()
+        for account in accountInfo:
+            accounts.append({   "username": account[0], "charName": account[1],
+                                "exp": account[2], "gold": account[3]})
+    except Exception as e:
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
+    return accounts
 
 
 def getGuildMembers(userID, guildID):
