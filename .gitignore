@@ -1,6 +1,0 @@
-**/__pycache__/**
-data/
-*.swp
-.DS*
-docker-compose.yml
-.gitignore
