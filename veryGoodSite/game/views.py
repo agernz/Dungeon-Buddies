@@ -231,3 +231,11 @@ def createNewGuild(userID, guildName):
             print(e)
     finally:
         c.close()
+
+@login_required
+def raidPage(request):
+
+
+    return render(request, 'game/raid.html')
+
+def
