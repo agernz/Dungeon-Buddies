@@ -46,6 +46,16 @@ CREATE TABLE Invite (
     ON DELETE CASCADE
 );
 
+CREATE TABLE Monster (
+  monsterID INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(30) NOT NULL,
+  health INT UNSIGNED default 1,
+  attack INT UNSIGNED default 1,
+  defense INT UNSIGNED default 1,
+  speed INT UNSIGNED default 1,
+  PRIMARY KEY (monsterID)
+);
+
 CREATE TABLE Raid (
   raidID INT UNSIGNED NOT NULL AUTO_INCREMENT,
   userID1 INT UNSIGNED NOT NULL,
@@ -69,12 +79,3 @@ CREATE TABLE Raid (
     ON DELETE CASCADE
 );
 
-CREATE TABLE Monster (
-  monsterID INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  name VARCHAR(30) NOT NULL,
-  health INT UNSIGNED default 1,
-  attack INT UNSIGNED default 1,
-  defense INT UNSIGNED default 1,
-  speed INT UNSIGNED default 1,
-  PRIMARY KEY (monsterID),
-);
