@@ -149,14 +149,14 @@ def getGuildRank(guildID):
                                 WHERE   A1.GOLD < B.GOLD OR (A1.GOLD = B.GOLD AND A1.guildID = B.guildID) \
                                 GROUP BY A1.guildID, A1.GOLD \
                                 ORDER BY A1.GOLD DESC, A1.guildID DESC) as ranking \
-                            WHERE ranking.guildID=%s;", [guildID])
+                            WHERE ranking.guildID=%s;", [guildID[0]])
             rank = c.fetchone()
         except Exception as e:
             if settings.DEBUG:
                 print(e)
         finally:
             c.close()
-    return rank
+    return rank[0]
 
 def getUserGuild(userID):
     c = connection.cursor()
