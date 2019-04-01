@@ -1,0 +1,36 @@
+{% extends "game/base.html" %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
+{% block content %}
+<h2> Start a Raid!</h2>
+<div class="container">
+  <div class="row">
+    <div class="col mr-4 bg-light rounded">
+      <div class="container mt-2">
+        <div class="row">
+          <div class="col">
+            Choose up to two partners!
+            {% for member in members %}
+              <div class="row">
+                {{ member.name }}
+                <!-- {{ member.name }}, {{ member.charName }}, {{ member.exp }}, {{ member.num_items }} -->
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col bg-light rounded">
+      <div class="mt-2">
+        Choose a Raid!
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

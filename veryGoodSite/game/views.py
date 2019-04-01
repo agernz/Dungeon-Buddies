@@ -228,14 +228,9 @@ def getGuildMembers(userID, guildID):
         "exp": ""
     }
     try:
-        c.execute("SELECT username, characterName, experience, temp.num_items \
-            FROM (SELECT Account.userID, username, \
-                  characterName, experience, \
-                  COUNT(Inventory.userID) as num_items \
-                  FROM Account LEFT JOIN Inventory \
-                  ON Account.userID=Inventory.userID \
-                  GROUP BY Account.userID) as temp \
-            WHERE temp.userID IN ( \
+        c.execute("SELECT username, characterName, experience \
+            FROM Account \
+            WHERE Account.userID IN ( \
               SELECT userID \
               FROM Member as m \
               WHERE m.guildID=%s AND m.pending=0) \
@@ -243,12 +238,13 @@ def getGuildMembers(userID, guildID):
         memberInfo = c.fetchall()
         for member in memberInfo:
             members.append({"name": member[0], "charName": member[1],
-                            "exp": member[2], "num_items": member[3]})
+                            "exp": member[2]})
     except Exception as e:
         if settings.DEBUG:
             print(e)
     finally:
         c.close()
+    print(members)
     return members
 
 
@@ -338,3 +334,13 @@ def createNewGuild(userID, guildName):
             print(e)
     finally:
         c.close()
+
+@login_required
+def raidPage(request):
+    guildID = getUserGuild(request.user.userID)
+    guildMembers = getGuildMembers(request.user.userID, guildID)
+    context = {
+        'members' : guildMembers
+    }
+
+    return render(request, 'game/raid.html', context)
