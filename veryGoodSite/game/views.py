@@ -38,19 +38,18 @@ def guildPage(request, form=GuildForm()):
 @login_required
 def statsPage(request):
     user = getUserInfo(request.user.userID, request.user.username)
-    context = {
-        'characterName': None,
-        'experience': None,
-        'gold': None,
-        'top100': None,
-        'rank': None
-    }
+    context = {}
+
     if user:
         context['characterName'] = user['charName']
         context['experience'] = user['exp']
         context['gold'] = user['gold']
         context['top100'] = getTop100()
         context['rank'] = getUserRank(request.user.userID)
+        context['guild'] = getUserGuild(request.user.userID)
+        context['top100Guilds'] = getTop100Guilds()
+        context['guildRank'] = getGuildRank(context['guild'])
+
     return render(request, 'game/stats.html', context)
 
 @login_required
@@ -128,8 +127,36 @@ def getUserRank(userID):
             print(e)
     finally:
         c.close()
-    print(type(rank))
     return rank[0]
+
+def getGuildRank(guildID):
+    rank = None
+    if guildID:
+        c = connection.cursor()
+        try:
+            c.execute(" SELECT ranking.gold_rank \
+                        FROM (  SELECT A1.guildID, A1.GOLD, COUNT(B.GOLD) as gold_rank \
+                                FROM    (SELECT  G.guildID, COUNT(M.userID) MEMBERS, SUM(A.gold) GOLD \
+                                        FROM    Guild G, Member M, Account A \
+                                        WHERE   G.guildID = M.guildID AND M.userID = A.userID \
+                                        GROUP BY G.guildID \
+                                        ORDER BY GOLD DESC) A1, \
+                                        (SELECT  G.guildID, COUNT(M.userID) MEMBERS, SUM(A.gold) GOLD \
+                                        FROM    Guild G, Member M, Account A \
+                                        WHERE   G.guildID = M.guildID AND M.userID = A.userID \
+                                        GROUP BY G.guildID \
+                                        ORDER BY GOLD DESC) B \
+                                WHERE   A1.GOLD < B.GOLD OR (A1.GOLD = B.GOLD AND A1.guildID = B.guildID) \
+                                GROUP BY A1.guildID, A1.GOLD \
+                                ORDER BY A1.GOLD DESC, A1.guildID DESC) as ranking \
+                            WHERE ranking.guildID=%s;", [guildID])
+            rank = c.fetchone()
+        except Exception as e:
+            if settings.DEBUG:
+                print(e)
+        finally:
+            c.close()
+    return rank
 
 def getUserGuild(userID):
     c = connection.cursor()
@@ -171,6 +198,26 @@ def getTop100():
         c.close()
     return accounts
 
+def getTop100Guilds():
+    c = connection.cursor()
+    guilds = []
+
+    try:
+        c.execute(" SELECT  G.name NAME, COUNT(M.userID) MEMBERS, SUM(A.gold) GOLD \
+                    FROM    Guild G, Member M, Account A \
+                    WHERE   G.guildID = M.guildID AND M.userID = A.userID \
+                    GROUP BY G.guildID \
+                    ORDER BY GOLD DESC LIMIT 100;")
+        guildInfo = c.fetchall()
+        for guild in guildInfo:
+            guilds.append({"guildName": guild[0], "members": guild[1], "gold": guild[2]})
+
+    except Exception as e:
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
+    return guilds
 
 def getGuildMembers(userID, guildID):
     c = connection.cursor()

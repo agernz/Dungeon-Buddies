@@ -8,80 +8,65 @@
   {% endif %}
 {% endblock %}
 {% block content %}
-{% if characterName %}
-<h1>Current Rank: {{ rank }}</h1>
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">User</th>
-        <th scope="col">Character</th>
-        <th scope="col">Experience</th>
-        <th scope="col">Gold</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for account in top100 %}
-        <tr>
-          <th scope="row">{{ forloop.counter }}</th>
-          <td>{{ account.username }}</td>
-          <td>{{ account.charName }}</td>
-          <td>{{ account.exp }}</td>
-          <td>{{ account.gold }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% if is_admin %}
-    <h3>Add Member</h3>
-    <div class="content-section">
-      <form action="{% url 'game-guild-invite' %}" method="POST">
-        {% csrf_token %}
-        <fieldset class="form-group">
-          <legend class="border-bottom mb-4:"></legend>
-          {{ inviteForm|crispy }}
-        </fieldset>
-        <div class="form-group">
-          <button class="btn btn-outline-info" type="submit">Submit</button>
-        </div>
-      </form>
-    </div>
-  {% endif %}
-{% else %}
-  <h1>header 2</h1>
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Guild Name</th>
-        <th scope="col">Number of Members</th>
-        <th scope="col">Join?</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for guild in guilds %}
-        <tr>
-          <th scope="row">{{ forloop.counter0 }}</th>
-          <td>{{ guild.name }}</td>
-          <td>{{ guild.num_members }}</td>
-          <td><a href="{% url 'game-guild-join' %}?gID={{ guild.gID }}">join</a></td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <h1>Create Guild</h1>
-  <div class="content-section">
-    <form action="{% url 'game-guild-create' %}" method="POST">
-      {% csrf_token %}
-      <fieldset class="form-group">
-        <legend class="border-bottom mb-4:"></legend>
-        {{ form|crispy }}
-      </fieldset>
-      <div class="form-group">
-        <button class="btn btn-outline-info" type="submit">Submit</button>
-      </div>
-    </form>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="personal-rank-tab" data-toggle="tab" href="#personal-rank" role="tab" aria-controls="personal rank" aria-selected="true">Personal Rank</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="guild-rank-tab" data-toggle="tab" href="#guild-rank" role="tab" aria-controls="guild rank" aria-selected="false">Guild Rank</a>
+  </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="personal-rank" role="tabpanel" aria-labelledby="personal rank tab">
+    <h1>Current Rank: {{ rank }}</h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">User</th>
+            <th scope="col">Character</th>
+            <th scope="col">Experience</th>
+            <th scope="col">Gold</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for account in top100 %}
+            <tr>
+              <th scope="row">{{ forloop.counter }}</th>
+              <td>{{ account.username }}</td>
+              <td>{{ account.charName }}</td>
+              <td>{{ account.exp }}</td>
+              <td>{{ account.gold }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
   </div>
-{% endif %}
+  <div class="tab-pane fade" id="guild-rank" role="tabpanel" aria-labelledby="guild rank tab">
+    {% if guild %}
+    <h1>Guild Rank: {{ guildRank }}</h1>
+    {% endif %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Guild Name</th>
+          <th scope="col">Members</th>
+          <th scope="col">Gold</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for guild in top100Guilds %}
+          <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ guild.guildName }}</td>
+            <td>{{ guild.members }}</td>
+            <td>{{ guild.gold }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 
 {% endblock content %}
