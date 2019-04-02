@@ -45,7 +45,6 @@
               <div id="inviteList"></div>
             </div>
             <script type="text/javascript">
-
               function getInvites(){
                 $.ajax({
                   type: "GET",
@@ -59,7 +58,8 @@
                     response["invites"].forEach(function(invite){
                       var div = document.createElement("DIV")
                       var sender = invite["senderUsername"]
-                      div.innerHTML = `${sender} has invited you on a raid!`
+                      var secondsLeft = invite["timeLeft"]
+                      div.innerHTML = `${sender} has invited you on a raid! You have ${secondsLeft} second(s) to respond.`
                       inviteDiv.appendChild(div)
                     })
                   }

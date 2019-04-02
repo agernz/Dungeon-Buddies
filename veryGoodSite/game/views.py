@@ -390,19 +390,25 @@ def sendRaidInvite(senderID, recieveID):
         c.close()
 
 def raidGetInvites(request):
+    timeToResponse = 45 #seconds
     responseData = {"invites" : []}
     c = connection.cursor()
     try:
 
-        c.execute(" SELECT username \
+        c.execute(" SELECT username, time \
                     FROM Account \
                     INNER JOIN \
-                        (SELECT senderID FROM Invite WHERE recieveID=%s) AS senders \
+                        (SELECT senderID, time FROM Invite WHERE recieveID=%s AND time >= %s) AS senders \
                         ON Account.userID = senders.senderID;",
-            [request.user.userID])
+            [request.user.userID, datetime.datetime.utcnow() - datetime.timedelta(seconds=timeToResponse)])
         # responseData = fetchone()
         for tup in c.fetchall():
-            responseData["invites"].append({"senderUsername": tup[0]})
+            timeLeft = datetime.timedelta(seconds=timeToResponse) - (datetime.datetime.utcnow() - tup[1])
+            timeLeft = int(timeLeft.total_seconds())
+            responseData["invites"].append({
+                "senderUsername": tup[0],
+                "timeLeft": timeLeft
+                })
     except Exception as e:
         if settings.DEBUG:
             print(e)
