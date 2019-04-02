@@ -7,6 +7,10 @@
   {% endif %}
 {% endblock %}
 {% block content %}
+<script type="text/javascript">
+  $(".nav-item").removeClass('active')
+  $("#raidNavLink").addClass('active')
+</script>
 <h4>Starting a Level {{ level }} raid. Get Ready!</h4>
 <h4>Partner 1: {{ partners.0 }}</h4>
 <h4>Partner 2: {{ partners.1 }}</h4>

@@ -8,6 +8,10 @@
   {% endif %}
 {% endblock %}
 {% block content %}
+<script type="text/javascript">
+  $(".nav-item").removeClass('active')
+  $("#statsNavLink").addClass('active')
+</script>
 <ul class="nav nav-tabs" id="myTab" role="tablist">
   <li class="nav-item">
     <a class="nav-link active" id="personal-rank-tab" data-toggle="tab" href="#personal-rank" role="tab" aria-controls="personal rank" aria-selected="true">Global Player Rank</a>

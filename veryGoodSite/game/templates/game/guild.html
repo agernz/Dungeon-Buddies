@@ -8,6 +8,10 @@
   {% endif %}
 {% endblock %}
 {% block content %}
+<script type="text/javascript">
+  $(".nav-item").removeClass('active')
+  $("#guildNavLink").addClass('active')
+</script>
 {% if guildName %}
 <a href="{% url 'game-guild' %}?leave=1">Leave Guild :(</a>
 <h1>{{ guildName }}</h1>

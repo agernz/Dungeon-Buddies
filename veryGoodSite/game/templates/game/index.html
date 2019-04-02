@@ -8,6 +8,10 @@
   {% endif %}
 {% endblock %}
 {% block content %}
+<script type="text/javascript">
+  $(".nav-item").removeClass('active')
+  $("#indexNavLink").addClass('active')
+</script>
   <div>
     {% if user.is_authenticated %}
       <div class="container">
