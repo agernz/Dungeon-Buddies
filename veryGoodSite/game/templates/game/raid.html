@@ -7,27 +7,166 @@
   {% endif %}
 {% endblock %}
 {% block content %}
-<h2> Start a Raid!</h2>
 <div class="container">
   <div class="row">
-    <div class="col mr-4 bg-light rounded">
-      <div class="container mt-2">
+    <div class="col">
+      <h2>Design a Raid!</h2>
+      <h4>Choose a level and up to two guild partners, or go solo.</h4>
+    </div>
+    <div class="col-2">
+      <button type="button" class="btn-lg btn-success mt-2" id="start-raid">Start Raid</button>
+      <!-- Error Models, greater than 2 raid members or no level-->
+      <div class="modal fade" id="tooManyPlayersModal" tabindex="-1" role="dialog" aria-labelledby="tooManyPlayersModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="tooManyPlayersModal">You have too many partners selected.</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              Select up to two partners to join you on a raid.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="noLevelSelectedModal" tabindex="-1" role="dialog" aria-labelledby="noLevelSelectedModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="noLevelSelectedModal">You have no level selected.</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              Select a level for your raid.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <form id="raid_form_paramters" action="{% url 'game-raid' %}" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="level" value=""/>
+          <input type="hidden" name="partner1" value=""/>
+          <input type="hidden" name="partner2" value=""/>
+      </form>
+      <script type="text/javascript">
+        $("#start-raid").click(function(){
+          var partners = []
+          var level = undefined
+          if ($(".chosen-member").length > 2) {
+            $('#tooManyPlayersModal').modal('show')
+          } else if ($(".selected-level").length != 1){
+            $('#noLevelSelectedModal').modal('show')
+          } else {
+            level = $(".selected-level").attr('id').substr(5)
+            // console.log($(".chosen-member").attr('id'))
+            $(".chosen-member").each(function(){
+              partners.push(this.id.substr(1));
+            })
+            for (i = 0; i < 2-$(".chosen-member").length; i++) {
+              partners.push(undefined)
+            }
+            var p = document.forms['raid_form_paramters']
+            p.elements["level"].value = level
+            p.elements["partner1"].value = partners[0]
+            p.elements["partner2"].value = partners[1]
+            document.getElementById("raid_form_paramters").submit()
+          }
+
+        });
+      </script>
+      <!-- End modal -->
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col bg-light mr-4 rounded">
+      <div class="container mt-4 mb-4">
         <div class="row">
           <div class="col">
-            Choose up to two partners!
-            {% for member in members %}
-              <div class="row">
-                {{ member.name }}
-                <!-- {{ member.name }}, {{ member.charName }}, {{ member.exp }}, {{ member.num_items }} -->
-              </div>
-            {% endfor %}
+            <ul class="list-group">
+              {% for level in levels %}
+                <li class="list-group-item list-group-item-level" id="level{{ forloop.counter }}">
+                  <div class="container">
+                    <div class="row">
+                      <div class="col">
+                        <div class="row"><b>Level {{ forloop.counter }}</b></div>
+                        <div class="row">{{ level.description }}</div>
+                      </div>
+                      <div class="col-2 mr-4 mt-1">
+                        <button type="button" class="btn-level btn btn-primary" id="button-level{{ forloop.counter }}">Select</button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <script type="text/javascript">
+                  $('#button-level{{ forloop.counter }}').click(function(){
+                    $('.btn-level').removeClass('btn-light')
+                    $('.btn-level').addClass('btn-primary')
+                    $('.list-group-item-level').removeClass('active selected-level')
+                    $('#level{{ forloop.counter }}').addClass('active selected-level')
+                    $('#button-level{{ forloop.counter }}').removeClass('btn-primary')
+                    $('#button-level{{ forloop.counter }}').addClass('btn-light')
+                  });
+                  </script>
+              {% endfor %}
+            </ul>
           </div>
         </div>
       </div>
     </div>
     <div class="col bg-light rounded">
-      <div class="mt-2">
-        Choose a Raid!
+      <div class="container mt-4 mb-4">
+        <div class="row">
+          <div class="col">
+            <ul class="list-group">
+            {% for member in members %}
+              <li class="list-group-item list-group-item-member" id="m{{ member.userID }}">
+                <div class="container">
+                  <div class="row">
+                    <div class="col">
+                      <div class="row"><b>{{ member.name }}</b></div>
+                      <div class="row">Experience: {{ member.exp }}</div>
+                    </div>
+                    <div class="col-2 mr-4 mt-1">
+                      <button type="button" class="btn btn-primary" id="button-member{{ forloop.counter0 }}">Select</button>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <script type="text/javascript">
+                $("#button-member{{ forloop.counter0 }}").click(function(){
+                  // $('.list-group-item-member').removeClass('active')
+                  if ($('#m{{ member.userID }}').hasClass('active')) {
+                    $('#m{{ member.userID }}').removeClass('active')
+                    $('#m{{ member.userID }}').removeClass('chosen-member')
+                    $('#button-member{{ forloop.counter0 }}').removeClass('btn-light')
+                    $('#button-member{{ forloop.counter0 }}').addClass('btn-primary')
+                    $('#button-member{{ forloop.counter0 }}').html("Select")
+                  } else {
+                    $('#m{{ member.userID }}').addClass('active')
+                    $('#m{{ member.userID }}').addClass('chosen-member')
+                    $('#button-member{{ forloop.counter0 }}').removeClass('btn-primary')
+                    $('#button-member{{ forloop.counter0 }}').addClass('btn-light')
+                    $('#button-member{{ forloop.counter0 }}').html("Remove")
+                  }
+                  // $('#member{{ forloop.counter0 }}').attr('id', 'chosen-members')
+                });
+              </script>
+            {% endfor %}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </div>

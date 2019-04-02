@@ -1,0 +1,13 @@
+{% extends "game/base.html" %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
+{% block content %}
+<h4>Starting a Level {{ level }} Raid. Get Ready!</h4>
+<h4>Partner 1: {{ partners.0 }}</h4>
+<h4>Partner 2: {{ partners.1 }}</h4>
+{% endblock %}

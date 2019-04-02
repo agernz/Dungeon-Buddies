@@ -172,7 +172,7 @@ def getTop100():
     return accounts
 
 
-def getGuildMembers(userID, guildID):
+def getGuildMembers(userID, guildID, includeSelf = True):
     c = connection.cursor()
     members = []
     memberInfo = {
@@ -181,7 +181,7 @@ def getGuildMembers(userID, guildID):
         "exp": ""
     }
     try:
-        c.execute("SELECT username, characterName, experience \
+        c.execute("SELECT userID, username, characterName, experience \
             FROM Account \
             WHERE Account.userID IN ( \
               SELECT userID \
@@ -190,14 +190,15 @@ def getGuildMembers(userID, guildID):
             ORDER BY experience;", [guildID])
         memberInfo = c.fetchall()
         for member in memberInfo:
-            members.append({"name": member[0], "charName": member[1],
-                            "exp": member[2]})
+            if not includeSelf and member[0]==userID:
+                continue
+            members.append({"userID": member[0], "name": member[1], "charName": member[2],
+                            "exp": member[3]})
     except Exception as e:
         if settings.DEBUG:
             print(e)
     finally:
         c.close()
-    print(members)
     return members
 
 
@@ -290,10 +291,42 @@ def createNewGuild(userID, guildName):
 
 @login_required
 def raidPage(request):
-    guildID = getUserGuild(request.user.userID)
-    guildMembers = getGuildMembers(request.user.userID, guildID)
-    context = {
-        'members' : guildMembers
-    }
+    if request.method == "POST":
+        level = request.POST.get("level", None)
+        partner1 = request.POST.get("partner1", None)
+        partner2 = request.POST.get("partner2", None)
+        context = {
+                "level" : level,
+                "partners" : [partner1, partner2]
+            }
+        return render(request, 'game/raid-staging.html', context)
+    else:
+        # handle get request
+        guildID = getUserGuild(request.user.userID)
+        guildMembers = getGuildMembers(request.user.userID, guildID[0], False)
+        levels = [
+            {"description" : "This is the reward you will recieve blah blah"},
+            {"description" : "This is the reward you will recieve blah blah"},
+            {"description" : "This is the reward you will recieve blah blah"},
+            {"description" : "This is the reward you will recieve blah blah"},
+            {"description" : "This is the reward you will recieve blah blah"},
+        ]
+        context = {
+            'members' : guildMembers,
+            'levels' : levels
+        }
+        return render(request, 'game/raid.html', context)
 
-    return render(request, 'game/raid.html', context)
+# def raidStage(request):
+#     # level = request.GET.get('l')
+#     # parter1 = request.GET.get('pID1')
+#     # parter2 = request.GET.get('pID2')
+#     level = request.POST.get("level", None)
+#     parter1 = request.POST.get("partners", None)
+#     # parter2 = request.POST.get("param1", None)
+#     print(level, parter1)
+#     # context = {
+#     #     "level" : level,
+#     #     "partners" : [parter1, parter2]
+#     # }
+#     return render(request, 'game/raid-staging.html')

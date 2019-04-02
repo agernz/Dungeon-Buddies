@@ -23,7 +23,7 @@
     <tbody>
       {% for member in members %}
         <tr>
-          <th scope="row">{{ forloop.counter0 }}</th>
+          <th scope="row">{{ forloop.counter }}</th>
           <td>{{ member.name }}</td>
           <td>{{ member.charName }}</td>
           <td>{{ member.exp }}</td>
@@ -60,7 +60,7 @@
     <tbody>
       {% for guild in guilds %}
         <tr>
-          <th scope="row">{{ forloop.counter0 }}</th>
+          <th scope="row">{{ forloop.counter }}</th>
           <td>{{ guild.name }}</td>
           <td>{{ guild.num_members }}</td>
           <td><a href="{% url 'game-guild-join' %}?gID={{ guild.gID }}">join</a></td>
