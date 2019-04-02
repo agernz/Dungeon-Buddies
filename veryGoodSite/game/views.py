@@ -340,6 +340,7 @@ def createNewGuild(userID, guildName):
 @login_required
 def raidPage(request):
     if request.method == "POST":
+        # handle POST request
         level = request.POST.get("level", None)
         partner1 = request.POST.get("partner1", None)
         partner2 = request.POST.get("partner2", None)
@@ -347,13 +348,13 @@ def raidPage(request):
                 "level" : level,
                 "partners" : [partner1, partner2]
             }
-        sendRaidInvite(request.user.userID, partner1)
-        sendRaidInvite(request.user.userID, partner2)
+        if partner1 != "undefined":
+            sendRaidInvite(request.user.userID, partner1)
+        if partner2 != "undefined":
+            sendRaidInvite(request.user.userID, partner2)
         return render(request, 'game/raid-staging.html', context)
     else:
-        # handle get request
-        guildID = getUserGuild(request.user.userID)
-        guildMembers = getGuildMembers(request.user.userID, guildID[0], False)
+        # handle GET request
         levels = [
             {"description" : "This is the reward you will recieve blah blah"},
             {"description" : "This is the reward you will recieve blah blah"},
@@ -361,10 +362,16 @@ def raidPage(request):
             {"description" : "This is the reward you will recieve blah blah"},
             {"description" : "This is the reward you will recieve blah blah"},
         ]
+
         context = {
-            'members' : guildMembers,
+            'members' : '',
             'levels' : levels
         }
+        guildID = getUserGuild(request.user.userID)
+        if guildID:
+            guildMembers = getGuildMembers(request.user.userID, guildID[0], False)
+            context['members'] = guildMembers
+
         return render(request, 'game/raid.html', context)
 
 def sendRaidInvite(senderID, recieveID):

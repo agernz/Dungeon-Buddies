@@ -111,12 +111,10 @@
                 </li>
                 <script type="text/javascript">
                   $('#button-level{{ forloop.counter }}').click(function(){
-                    $('.btn-level').removeClass('btn-light')
-                    $('.btn-level').addClass('btn-primary')
+                    $('.btn-level').show()
                     $('.list-group-item-level').removeClass('active selected-level')
                     $('#level{{ forloop.counter }}').addClass('active selected-level')
-                    $('#button-level{{ forloop.counter }}').removeClass('btn-primary')
-                    $('#button-level{{ forloop.counter }}').addClass('btn-light')
+                    $('#button-level{{ forloop.counter }}').hide()
                   });
                   </script>
               {% endfor %}
@@ -130,40 +128,55 @@
         <div class="row">
           <div class="col">
             <ul class="list-group">
-            {% for member in members %}
-              <li class="list-group-item list-group-item-member" id="m{{ member.userID }}">
+            {% if members %}
+              {% for member in members %}
+                <li class="list-group-item list-group-item-member" id="m{{ member.userID }}">
+                  <div class="container">
+                    <div class="row">
+                      <div class="col">
+                        <div class="row"><b>{{ member.name }}</b></div>
+                        <div class="row">Experience: {{ member.exp }}</div>
+                      </div>
+                      <div class="col-2 mr-4 mt-1">
+                        <button type="button" class="btn btn-primary" id="button-member{{ forloop.counter0 }}">Select</button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <script type="text/javascript">
+                  $("#button-member{{ forloop.counter0 }}").click(function(){
+                    // $('.list-group-item-member').removeClass('active')
+                    if ($('#m{{ member.userID }}').hasClass('active')) {
+                      $('#m{{ member.userID }}').removeClass('active')
+                      $('#m{{ member.userID }}').removeClass('chosen-member')
+                      $('#button-member{{ forloop.counter0 }}').removeClass('btn-light')
+                      $('#button-member{{ forloop.counter0 }}').addClass('btn-primary')
+                      $('#button-member{{ forloop.counter0 }}').html("Select")
+                    } else {
+                      $('#m{{ member.userID }}').addClass('active')
+                      $('#m{{ member.userID }}').addClass('chosen-member')
+                      $('#button-member{{ forloop.counter0 }}').removeClass('btn-primary')
+                      $('#button-member{{ forloop.counter0 }}').addClass('btn-light')
+                      $('#button-member{{ forloop.counter0 }}').html("Remove")
+                    }
+                    // $('#member{{ forloop.counter0 }}').attr('id', 'chosen-members')
+                  });
+                </script>
+              {% endfor %}
+            {% else %}
+              <li class="list-group-item">
                 <div class="container">
                   <div class="row">
                     <div class="col">
-                      <div class="row"><b>{{ member.name }}</b></div>
-                      <div class="row">Experience: {{ member.exp }}</div>
+                      Create or join a guild, or add guild members to invite partners!
                     </div>
-                    <div class="col-2 mr-4 mt-1">
-                      <button type="button" class="btn btn-primary" id="button-member{{ forloop.counter0 }}">Select</button>
+                    <div class="col-3 mr-4 mt-1">
+                      <a class="btn btn-primary" href="{% url 'game-guild' %}">Go to Guild</a>
                     </div>
                   </div>
                 </div>
               </li>
-              <script type="text/javascript">
-                $("#button-member{{ forloop.counter0 }}").click(function(){
-                  // $('.list-group-item-member').removeClass('active')
-                  if ($('#m{{ member.userID }}').hasClass('active')) {
-                    $('#m{{ member.userID }}').removeClass('active')
-                    $('#m{{ member.userID }}').removeClass('chosen-member')
-                    $('#button-member{{ forloop.counter0 }}').removeClass('btn-light')
-                    $('#button-member{{ forloop.counter0 }}').addClass('btn-primary')
-                    $('#button-member{{ forloop.counter0 }}').html("Select")
-                  } else {
-                    $('#m{{ member.userID }}').addClass('active')
-                    $('#m{{ member.userID }}').addClass('chosen-member')
-                    $('#button-member{{ forloop.counter0 }}').removeClass('btn-primary')
-                    $('#button-member{{ forloop.counter0 }}').addClass('btn-light')
-                    $('#button-member{{ forloop.counter0 }}').html("Remove")
-                  }
-                  // $('#member{{ forloop.counter0 }}').attr('id', 'chosen-members')
-                });
-              </script>
-            {% endfor %}
+            {% endif %}
             </ul>
           </div>
         </div>
