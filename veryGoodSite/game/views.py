@@ -6,6 +6,7 @@ from django.conf import settings
 from game.forms.GuildForm import GuildForm
 from game.forms.InviteForm import InviteForm
 import re
+import datetime
 
 
 def index(request):
@@ -346,6 +347,8 @@ def raidPage(request):
                 "level" : level,
                 "partners" : [partner1, partner2]
             }
+        sendRaidInvite(request.user.userID, partner1)
+        sendRaidInvite(request.user.userID, partner2)
         return render(request, 'game/raid-staging.html', context)
     else:
         # handle get request
@@ -364,16 +367,15 @@ def raidPage(request):
         }
         return render(request, 'game/raid.html', context)
 
-# def raidStage(request):
-#     # level = request.GET.get('l')
-#     # parter1 = request.GET.get('pID1')
-#     # parter2 = request.GET.get('pID2')
-#     level = request.POST.get("level", None)
-#     parter1 = request.POST.get("partners", None)
-#     # parter2 = request.POST.get("param1", None)
-#     print(level, parter1)
-#     # context = {
-#     #     "level" : level,
-#     #     "partners" : [parter1, parter2]
-#     # }
-#     return render(request, 'game/raid-staging.html')
+def sendRaidInvite(senderID, recieveID):
+    c = connection.cursor()
+    try:
+        c.execute("DELETE FROM Invite WHERE senderID=%s AND recieveID=%s;", [senderID, recieveID])
+        c.execute("INSERT INTO Invite(senderID, recieveID, time) \
+                       VALUES(%s, %s, %s);",
+                  [senderID, recieveID, datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')])
+    except Exception as e:
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
