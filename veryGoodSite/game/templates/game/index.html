@@ -17,7 +17,7 @@
       <div class="container">
         <div class="row">
           <div class="col mr-4 bg-light rounded">
-            <div class="container mt-2">
+            <div class="container mt-2 mb-2">
               <div class="row">
                 <div class="col-4">
                   <img src="{% static "game/profilepic.png" %}" alt="profile picture" class="img-thumbnail">
@@ -40,9 +40,34 @@
             </div>
           </div>
           <div class="col bg-light rounded">
-            <div class="mt-2">
-              Raids
+            <div class="mt-2 mb-2">
+              Raids Invites:
+              <div id="inviteList"></div>
             </div>
+            <script type="text/javascript">
+
+              function getInvites(){
+                $.ajax({
+                  type: "GET",
+                  url: "{% url 'game-raid-get-invites' %}",
+                  dataType: "json",
+                  success: function(response){
+                    var inviteDiv = document.getElementById("inviteList");
+                    while (inviteDiv.firstChild) {
+                        inviteDiv.removeChild(inviteDiv.firstChild);
+                    }
+                    response["invites"].forEach(function(invite){
+                      var div = document.createElement("DIV")
+                      var sender = invite["senderUsername"]
+                      div.innerHTML = `${sender} has invited you on a raid!`
+                      inviteDiv.appendChild(div)
+                    })
+                  }
+                });
+              };
+              window.onload = getInvites;
+              window.setInterval(function(){ getInvites(); }, 5000)
+            </script>
           </div>
         </div>
       </div>

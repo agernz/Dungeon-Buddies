@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.conf import settings
 from game.forms.GuildForm import GuildForm
 from game.forms.InviteForm import InviteForm
+from django.http import JsonResponse
 import re
 import datetime
 
@@ -339,6 +340,27 @@ def createNewGuild(userID, guildName):
 
 @login_required
 def raidPage(request):
+    levels = [
+        {"description" : "This is the reward you will recieve blah blah"},
+        {"description" : "This is the reward you will recieve blah blah"},
+        {"description" : "This is the reward you will recieve blah blah"},
+        {"description" : "This is the reward you will recieve blah blah"},
+        {"description" : "This is the reward you will recieve blah blah"},
+    ]
+
+    context = {
+        'members' : '',
+        'levels' : levels
+    }
+    guildID = getUserGuild(request.user.userID)
+    if guildID:
+        guildMembers = getGuildMembers(request.user.userID, guildID[0], False)
+        context['members'] = guildMembers
+
+    return render(request, 'game/raid.html', context)
+
+@login_required
+def raidStage(request):
     if request.method == "POST":
         # handle POST request
         level = request.POST.get("level", None)
@@ -353,26 +375,6 @@ def raidPage(request):
         if partner2 != "undefined":
             sendRaidInvite(request.user.userID, partner2)
         return render(request, 'game/raid-staging.html', context)
-    else:
-        # handle GET request
-        levels = [
-            {"description" : "This is the reward you will recieve blah blah"},
-            {"description" : "This is the reward you will recieve blah blah"},
-            {"description" : "This is the reward you will recieve blah blah"},
-            {"description" : "This is the reward you will recieve blah blah"},
-            {"description" : "This is the reward you will recieve blah blah"},
-        ]
-
-        context = {
-            'members' : '',
-            'levels' : levels
-        }
-        guildID = getUserGuild(request.user.userID)
-        if guildID:
-            guildMembers = getGuildMembers(request.user.userID, guildID[0], False)
-            context['members'] = guildMembers
-
-        return render(request, 'game/raid.html', context)
 
 def sendRaidInvite(senderID, recieveID):
     c = connection.cursor()
@@ -380,9 +382,30 @@ def sendRaidInvite(senderID, recieveID):
         c.execute("DELETE FROM Invite WHERE senderID=%s AND recieveID=%s;", [senderID, recieveID])
         c.execute("INSERT INTO Invite(senderID, recieveID, time) \
                        VALUES(%s, %s, %s);",
-                  [senderID, recieveID, datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')])
+                [senderID, recieveID, datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')])
     except Exception as e:
         if settings.DEBUG:
             print(e)
     finally:
         c.close()
+
+def raidGetInvites(request):
+    responseData = {"invites" : []}
+    c = connection.cursor()
+    try:
+
+        c.execute(" SELECT username \
+                    FROM Account \
+                    INNER JOIN \
+                        (SELECT senderID FROM Invite WHERE recieveID=%s) AS senders \
+                        ON Account.userID = senders.senderID;",
+            [request.user.userID])
+        # responseData = fetchone()
+        for tup in c.fetchall():
+            responseData["invites"].append({"senderUsername": tup[0]})
+    except Exception as e:
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
+    return JsonResponse(responseData)

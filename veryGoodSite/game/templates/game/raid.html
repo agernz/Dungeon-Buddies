@@ -56,7 +56,7 @@
           </div>
         </div>
       </div>
-      <form id="raid_form_paramters" action="{% url 'game-raid' %}" method="POST">
+      <form id="raid_form_paramters" action="{% url 'game-raid-stage' %}" method="POST">
           {% csrf_token %}
           <input type="hidden" name="level" value=""/>
           <input type="hidden" name="partner1" value=""/>
@@ -72,7 +72,6 @@
             $('#noLevelSelectedModal').modal('show')
           } else {
             level = $(".selected-level").attr('id').substr(5)
-            // console.log($(".chosen-member").attr('id'))
             $(".chosen-member").each(function(){
               partners.push(this.id.substr(1));
             })
@@ -85,7 +84,6 @@
             p.elements["partner2"].value = partners[1]
             document.getElementById("raid_form_paramters").submit()
           }
-
         });
       </script>
       <!-- End modal -->
