@@ -6,7 +6,6 @@ from django.conf import settings
 from game.forms.GuildForm import GuildForm
 from game.forms.InviteForm import InviteForm
 from django.http import JsonResponse
-import re
 import datetime
 
 
@@ -37,6 +36,7 @@ def guildPage(request, form=GuildForm()):
         context['inviteForm'] = InviteForm()
     return render(request, 'game/guild.html', context)
 
+
 @login_required
 def statsPage(request):
     user = getUserInfo(request.user.userID, request.user.username)
@@ -50,9 +50,11 @@ def statsPage(request):
         context['rank'] = getUserRank(request.user.userID)
         context['guild'] = getUserGuild(request.user.userID)
         context['top100Guilds'] = getTop100Guilds()
-        context['guildRank'] = getGuildRank(context['guild'])
+        if context['guild']:
+            context['guildRank'] = getGuildRank(context['guild'])
 
     return render(request, 'game/stats.html', context)
+
 
 @login_required
 def createGuild(request):
@@ -90,6 +92,7 @@ def joinGuild(request):
         joinGuildMember(request.user.userID, request.GET.get('gID'))
     return guildPage(request)
 
+
 def getUserInfo(userID, uname):
     c = connection.cursor()
     userInfo = {
@@ -112,14 +115,17 @@ def getUserInfo(userID, uname):
         c.close()
     return userInfo
 
+
 def getUserRank(userID):
     c = connection.cursor()
     rank = None
     try:
         c.execute(" SELECT ranking.gold_rank \
-                    FROM (  SELECT A.userID, A.gold, COUNT(B.gold) as gold_rank \
+                    FROM (  SELECT A.userID, A.gold, COUNT(B.gold) \
+                            as gold_rank \
                             FROM Account A, Account B \
-                            WHERE A.gold < B.gold OR (A.gold = B.gold AND A.userID = B.userID) \
+                            WHERE A.gold < B.gold OR (A.gold = B.gold AND \
+                            A.userID = B.userID) \
                             GROUP BY A.userID, A.gold \
                             ORDER BY A.gold DESC, A.userID DESC) as ranking \
                     WHERE ranking.userID=%s;", [userID])
@@ -131,26 +137,34 @@ def getUserRank(userID):
         c.close()
     return rank[0]
 
+
 def getGuildRank(guildID):
     rank = None
     if guildID:
         c = connection.cursor()
         try:
             c.execute(" SELECT ranking.gold_rank \
-                        FROM (  SELECT A1.guildID, A1.GOLD, COUNT(B.GOLD) as gold_rank \
-                                FROM    (SELECT  G.guildID, COUNT(M.userID) MEMBERS, SUM(A.gold) GOLD \
-                                        FROM    Guild G, Member M, Account A \
-                                        WHERE   G.guildID = M.guildID AND M.userID = A.userID \
-                                        GROUP BY G.guildID \
-                                        ORDER BY GOLD DESC) A1, \
-                                        (SELECT  G.guildID, COUNT(M.userID) MEMBERS, SUM(A.gold) GOLD \
-                                        FROM    Guild G, Member M, Account A \
-                                        WHERE   G.guildID = M.guildID AND M.userID = A.userID \
-                                        GROUP BY G.guildID \
-                                        ORDER BY GOLD DESC) B \
-                                WHERE   A1.GOLD < B.GOLD OR (A1.GOLD = B.GOLD AND A1.guildID = B.guildID) \
+                        FROM (  SELECT A1.guildID, A1.GOLD, COUNT(B.GOLD) \
+                                as gold_rank \
+                                FROM (SELECT  G.guildID, COUNT(M.userID) \
+                                MEMBERS, SUM(A.gold) GOLD \
+                                    FROM Guild G, Member M, Account A \
+                                    WHERE G.guildID = M.guildID \
+                                    AND M.userID = A.userID \
+                                    GROUP BY G.guildID \
+                                    ORDER BY GOLD DESC) A1, \
+                                    (SELECT G.guildID, COUNT(M.userID) \
+                                    MEMBERS, SUM(A.gold) GOLD \
+                                    FROM Guild G, Member M, Account A \
+                                    WHERE G.guildID = M.guildID AND M.userID \
+                                    = A.userID \
+                                    GROUP BY G.guildID \
+                                    ORDER BY GOLD DESC) B \
+                                WHERE   A1.GOLD < B.GOLD OR (A1.GOLD = \
+                                B.GOLD AND A1.guildID = B.guildID) \
                                 GROUP BY A1.guildID, A1.GOLD \
-                                ORDER BY A1.GOLD DESC, A1.guildID DESC) as ranking \
+                                ORDER BY A1.GOLD DESC, A1.guildID DESC) \
+                                as ranking \
                             WHERE ranking.guildID=%s;", [guildID[0]])
             rank = c.fetchone()
         except Exception as e:
@@ -159,6 +173,7 @@ def getGuildRank(guildID):
         finally:
             c.close()
     return rank[0]
+
 
 def getUserGuild(userID):
     c = connection.cursor()
@@ -176,6 +191,7 @@ def getUserGuild(userID):
         c.close()
     return guild
 
+
 def getTop100():
     c = connection.cursor()
     accounts = []
@@ -191,14 +207,15 @@ def getTop100():
                     ORDER BY gold desc limit 100;")
         accountInfo = c.fetchall()
         for account in accountInfo:
-            accounts.append({   "username": account[0], "charName": account[1],
-                                "exp": account[2], "gold": account[3]})
+            accounts.append({"username": account[0], "charName": account[1],
+                             "exp": account[2], "gold": account[3]})
     except Exception as e:
         if settings.DEBUG:
             print(e)
     finally:
         c.close()
     return accounts
+
 
 def getTop100Guilds():
     c = connection.cursor()
@@ -212,7 +229,8 @@ def getTop100Guilds():
                     ORDER BY GOLD DESC LIMIT 100;")
         guildInfo = c.fetchall()
         for guild in guildInfo:
-            guilds.append({"guildName": guild[0], "members": guild[1], "gold": guild[2]})
+            guilds.append({"guildName": guild[0],
+                           "members": guild[1], "gold": guild[2]})
 
     except Exception as e:
         if settings.DEBUG:
@@ -221,7 +239,8 @@ def getTop100Guilds():
         c.close()
     return guilds
 
-def getGuildMembers(userID, guildID, includeSelf = True):
+
+def getGuildMembers(userID, guildID, includeSelf=True):
     c = connection.cursor()
     members = []
     memberInfo = {
@@ -239,9 +258,10 @@ def getGuildMembers(userID, guildID, includeSelf = True):
             ORDER BY experience;", [guildID])
         memberInfo = c.fetchall()
         for member in memberInfo:
-            if not includeSelf and member[0]==userID:
+            if not includeSelf and member[0] == userID:
                 continue
-            members.append({"userID": member[0], "name": member[1], "charName": member[2],
+            members.append({"userID": member[0],
+                            "name": member[1], "charName": member[2],
                             "exp": member[3]})
     except Exception as e:
         if settings.DEBUG:
@@ -293,7 +313,8 @@ def leaveGuild(userID):
     c = connection.cursor()
     try:
         c.execute("UPDATE Account SET guildID=Null WHERE userID=%s;", [userID])
-        c.execute("DELETE FROM Member WHERE userID=%s AND pending=0;", [userID])
+        c.execute("DELETE FROM Member WHERE userID=%s \
+                  AND pending=0;", [userID])
         c.execute("DELETE FROM Guild WHERE owner=%s;", [userID])
     except Exception as e:
         if settings.DEBUG:
@@ -338,19 +359,20 @@ def createNewGuild(userID, guildName):
     finally:
         c.close()
 
+
 @login_required
 def raidPage(request):
     levels = [
-        {"description" : "This is the reward you will recieve blah blah"},
-        {"description" : "This is the reward you will recieve blah blah"},
-        {"description" : "This is the reward you will recieve blah blah"},
-        {"description" : "This is the reward you will recieve blah blah"},
-        {"description" : "This is the reward you will recieve blah blah"},
+        {"description": "This is the reward you will recieve blah blah"},
+        {"description": "This is the reward you will recieve blah blah"},
+        {"description": "This is the reward you will recieve blah blah"},
+        {"description": "This is the reward you will recieve blah blah"},
+        {"description": "This is the reward you will recieve blah blah"},
     ]
 
     context = {
-        'members' : '',
-        'levels' : levels
+        'members': '',
+        'levels': levels
     }
     guildID = getUserGuild(request.user.userID)
     if guildID:
@@ -358,6 +380,7 @@ def raidPage(request):
         context['members'] = guildMembers
 
     return render(request, 'game/raid.html', context)
+
 
 @login_required
 def raidStage(request):
@@ -367,8 +390,8 @@ def raidStage(request):
         partner1 = request.POST.get("partner1", None)
         partner2 = request.POST.get("partner2", None)
         context = {
-                "level" : level,
-                "partners" : [partner1, partner2]
+                "level": level,
+                "partners": [partner1, partner2]
             }
         if partner1 != "undefined":
             sendRaidInvite(request.user.userID, partner1)
@@ -376,34 +399,41 @@ def raidStage(request):
             sendRaidInvite(request.user.userID, partner2)
         return render(request, 'game/raid-staging.html', context)
 
+
 def sendRaidInvite(senderID, recieveID):
     c = connection.cursor()
     try:
-        c.execute("DELETE FROM Invite WHERE senderID=%s AND recieveID=%s;", [senderID, recieveID])
+        c.execute("DELETE FROM Invite WHERE senderID=%s \
+                  AND recieveID=%s;", [senderID, recieveID])
         c.execute("INSERT INTO Invite(senderID, recieveID, time) \
                        VALUES(%s, %s, %s);",
-                [senderID, recieveID, datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')])
+                  [senderID, recieveID,
+                   datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')])
     except Exception as e:
         if settings.DEBUG:
             print(e)
     finally:
         c.close()
 
+
 def raidGetInvites(request):
-    timeToResponse = 45 #seconds
-    responseData = {"invites" : []}
+    timeToResponse = 45  # seconds
+    responseData = {"invites": []}
     c = connection.cursor()
     try:
 
         c.execute(" SELECT username, time \
                     FROM Account \
                     INNER JOIN \
-                        (SELECT senderID, time FROM Invite WHERE recieveID=%s AND time >= %s) AS senders \
+                        (SELECT senderID, time FROM Invite \
+                        WHERE recieveID=%s AND time >= %s) AS senders \
                         ON Account.userID = senders.senderID;",
-            [request.user.userID, datetime.datetime.utcnow() - datetime.timedelta(seconds=timeToResponse)])
+                  [request.user.userID, datetime.datetime.utcnow()
+                   - datetime.timedelta(seconds=timeToResponse)])
         # responseData = fetchone()
         for tup in c.fetchall():
-            timeLeft = datetime.timedelta(seconds=timeToResponse) - (datetime.datetime.utcnow() - tup[1])
+            timeLeft = datetime.timedelta(seconds=timeToResponse)
+            - (datetime.datetime.utcnow() - tup[1])
             timeLeft = int(timeLeft.total_seconds())
             responseData["invites"].append({
                 "senderUsername": tup[0],
