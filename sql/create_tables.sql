@@ -46,39 +46,33 @@ CREATE TABLE Invite (
     ON DELETE CASCADE
 );
 
-CREATE TABLE Monster (
-  monsterID INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  name VARCHAR(30) NOT NULL,
-  health INT UNSIGNED default 1,
-  attack INT UNSIGNED default 1,
-  defense INT UNSIGNED default 1,
-  speed INT UNSIGNED default 1,
-  PRIMARY KEY (monsterID)
-);
-
 CREATE TABLE Raid (
-  raidID INT UNSIGNED NOT NULL AUTO_INCREMENT,
   userID1 INT UNSIGNED NOT NULL,
   userID2 INT UNSIGNED NULL,
   userID3 INT UNSIGNED NULL,
-  monsterID1 INT UNSIGNED NOT NULL,
-  monsterID2 INT UNSIGNED NULL,
-  monsterID3 INT UNSIGNED NULL,
   user1Move VARCHAR(3) NULL,
   user2Move VARCHAR(3) NULL,
   user3Move VARCHAR(3) NULL,
-  PRIMARY KEY (raidID),
+  raidLevel INT UNSIGNED NOT NULL,
+  stageing SMALLINT UNSIGNED default 1,
+  PRIMARY KEY (userID1),
   FOREIGN KEY (userID1) REFERENCES Account (userID)
     ON DELETE CASCADE,
   FOREIGN KEY (userID2) REFERENCES Account (userID)
     ON DELETE CASCADE,
   FOREIGN KEY (userID3) REFERENCES Account (userID)
-    ON DELETE CASCADE,
-  FOREIGN KEY (monsterID1) REFERENCES Monster (monsterID)
-    ON DELETE CASCADE,
-  FOREIGN KEY (monsterID2) REFERENCES Monster (monsterID)
-    ON DELETE CASCADE,
-  FOREIGN KEY (monsterID3) REFERENCES Monster (monsterID)
     ON DELETE CASCADE
 );
 
+CREATE TABLE Monster (
+  monsterID INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  raidID INT UNSIGNED NOT NULL,
+  name VARCHAR(30) NOT NULL,
+  health INT UNSIGNED default 1,
+  attack INT UNSIGNED default 1,
+  defense INT UNSIGNED default 1,
+  speed INT UNSIGNED default 1,
+  PRIMARY KEY (monsterID),
+  FOREIGN KEY (raidID) REFERENCES Raid (userID1)
+    ON DELETE CASCADE
+);
