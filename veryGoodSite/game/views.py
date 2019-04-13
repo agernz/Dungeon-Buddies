@@ -9,7 +9,8 @@ from game.sql import (
     getUserInfo, leaveGuild, getGuildInvites, getGuildMembers, getGuildRank,
     getTop100, getUserRank, getUserGuild, getTop100Guilds, createNewGuild,
     sendGuildInvite, joinGuildMember, sendRaidInvite, getRaidInvites,
-    createRaid, getRaidStatus, getRaid
+    createRaid, getRaidStatus, getRaid, getMonsters, getPartyNames,
+    generateMonsters, noMonsters
 )
 
 
@@ -141,14 +142,16 @@ def raidStage(request):
         partner2 = request.POST.get("partner2", None)
         context = {
                 "level": level,
-                "partners": [partner1, partner2]
+                "partners": [partner1, partner2],
+                "is_owner": True
             }
         if partner1 != "undefined":
             sendRaidInvite(request.user.userID, partner1)
         if partner2 != "undefined":
             sendRaidInvite(request.user.userID, partner2)
 
-        if createRaid(request.user.userID, level):
+        uInfo = getUserInfo(request.user.userID, request.user.username)
+        if createRaid(request.user.userID, level, uInfo["health"]):
             return render(request, 'game/raid-staging.html', context)
         else:
             messages.warning(request, "Could not create Raid")
@@ -158,13 +161,44 @@ def raidStage(request):
         raid = getRaid(request.user.userID)
         # TODO get other players, show status
         context = {
-                "level": raid['raidLevel'],
-                "partners": [None, None]
-            }
+            "level": raid['raidLevel'],
+            "partners": [None, None],
+            "is_owner": request.user.userID == raid['user1']
+        }
         return render(request, 'game/raid-staging.html', context)
 
 
 @login_required
 def raidPlay(request):
-    # TODO implement this lol
+    # TODO error handling
+    raid = getRaid(request.user.userID)
+    pk = raid['user1']
+    if noMonsters(pk):
+        generateMonsters(pk, raid['raidLevel'])
+    this_user = request.user.userID
+    party = []
+    userIDs = [raid['user1'], raid['user2'], raid['user3']]
+    userHealth = [raid['health1'], raid['health2'], raid['health3']]
+    userMoves = [raid['move1'], raid['move2'], raid['move3']]
+    no_move = False
+    for i, name, health, move in zip(userIDs, getPartyNames(userIDs),
+                                     userHealth, userMoves):
+        if this_user == i and move is None:
+            no_move = True
+        party.append({
+            "name": name,
+            "health": health,
+            "no_move": move is None,
+        })
+    context = {
+        "monsters": getMonsters(pk),
+        "party": party,
+        "no_move": no_move
+    }
+
+    return render(request, 'game/raid-play.html', context)
+
+
+def raidAttack(request):
+    # TODO insert move into raid table
     return None
