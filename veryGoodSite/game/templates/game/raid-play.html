@@ -1,0 +1,27 @@
+{% extends "game/base.html" %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
+{% block content %}
+<h4>Monsters...</h4>
+{% for m in monsters %} 
+<ul>
+  <li>name: {{ m.name }} health: {{ m.health }}</li>
+  {% if no_move %}
+    <a href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}">attack {{ m.name }}</a>
+  {% endif %}
+</ul>
+{% endfor %} 
+
+<h4>Party</h4>
+{% for member in party %} 
+<ul>
+  <li>name: {{ member.name }} health: {{ member.health }}</li>
+  <li> {% if member.no_move %}*no move*{% endif %} </li>
+</ul>
+{% endfor %} 
+{% endblock content %}
