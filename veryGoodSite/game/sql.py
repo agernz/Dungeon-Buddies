@@ -1,5 +1,6 @@
 from django.db import connection
 from django.conf import settings
+import random as r
 import datetime
 
 
@@ -323,3 +324,100 @@ def getRaidInvites(userID):
     finally:
         c.close()
     return responseData
+
+
+def generateMonsters(userID):
+    succes = True
+    monster_names = ["Slime", "Skeleton", "Zombie", "Dennis"]
+    c = connection.cursor()
+    try:
+        c.execute("SELECT raidLevel \
+                   FROM Raid \
+                   WHERE userID1=%s;" [userID])
+        rl = c.fetchone()[1]
+        c.execute("SELECT SUM(level) \
+                   FROM Account \
+                   WHERE Account.userID IN \
+                    (SELECT userID1, userID2, userID3 \
+                     FROM Raid \
+                     WHERE userID1=%s);", [userID])
+        pl = c.fetchone()[0]
+        nm = r.randrange(1, 3)
+        for i in range(nm):
+            m_name = monster_names[r.randint(4)]
+            m_health = (r.randrange(1, pl) + rl) / nm
+            m_attack = (r.randrange(1, pl) + rl) / nm
+            m_defense = (r.randrange(1, pl) + rl) / nm
+            m_speed = (r.randrange(1, pl) + rl) / nm
+            c.execute("INSERT INTO Monster(raidID, name, health, attack, defense \
+                      speed) VALUES(%s, %s, %s, %s, %s, %s);"
+                      [userID, m_name, m_health, m_attack, m_defense, m_speed])
+    except Exception as e:
+        succes = False
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
+    return succes
+
+
+def createRaid(userID, level):
+    c = connection.cursor()
+    succes = True
+    try:
+        c.execute("INSERT INTO Raid(userID1, raidLevel) \
+                   VALUES(%s, %s);",
+                  [userID, level])
+    except Exception as e:
+        succes = False
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
+    return succes
+
+
+def getRaidStatus(userID):
+    c = connection.cursor()
+    is_stageing = -1
+    try:
+        c.execute("SELECT stageing FROM Raid WHERE userID1=%s",
+                  [userID])
+        is_stageing = c.fetchone()[0]
+    except Exception as e:
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
+    return is_stageing
+
+
+def getRaid(userID):
+    c = connection.cursor()
+    raid = {
+        "user1": "",
+        "user2": "",
+        "user3": "",
+        "user1Move": "",
+        "user2Move": "",
+        "user3Move": "",
+        "raidLevel": -1,
+        "stageing": -1
+    }
+    try:
+        c.execute("SELECT * FROM Raid WHERE userID1=%s", [userID])
+        data = c.fetchone()
+        raid["user1"] = data[0]
+        raid["user2"] = data[1]
+        raid["user3"] = data[2]
+        raid["user1Move"] = data[3]
+        raid["user2Move"] = data[4]
+        raid["user3Move"] = data[5]
+        raid["raidLevel"] = data[6]
+        raid["stageing"] = data[7]
+    except Exception as e:
+        if settings.DEBUG:
+            print(e)
+    finally:
+        c.close()
+    return raid
