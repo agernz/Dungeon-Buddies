@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from game.forms.GuildForm import GuildForm
@@ -8,10 +8,12 @@ import math
 from game.sql import (
     getUserInfo, leaveGuild, getGuildInvites, getGuildMembers, getGuildRank,
     getTop100, getUserRank, getUserGuild, getTop100Guilds, createNewGuild,
-    sendGuildInvite, joinGuildMember, sendRaidInvite, getRaidInvites
+    sendGuildInvite, joinGuildMember, sendRaidInvite, getRaidInvites,
+    createRaid, getRaidStatus, getRaid
 )
 
 
+# TODO delete old invites, maybe remove time?
 NUM_LEVELS = 5
 
 
@@ -21,6 +23,11 @@ def index(request):
                       {"userInfo": getUserInfo(request.user.userID,
                                                request.user.username)})
     return render(request, 'game/index.html')
+
+
+@login_required
+def raidGetInvites(request):
+    return JsonResponse(getRaidInvites(request.user.userID))
 
 
 @login_required
@@ -101,6 +108,12 @@ def joinGuild(request):
 
 @login_required
 def raidPage(request):
+    raidStatus = getRaidStatus(request.user.userID)
+    if raidStatus == 1:
+        return redirect("game-raid-stage")
+    elif raidStatus == 0:
+        return redirect("game-raid-play")
+
     levels = []
     for l in range(1, NUM_LEVELS + 1):
         levels.append({"description": "You may recieve {0} gold and {1} exp \
@@ -121,8 +134,8 @@ def raidPage(request):
 
 @login_required
 def raidStage(request):
+    # TODO allow user to delete raid on this page
     if request.method == "POST":
-        # handle POST request
         level = request.POST.get("level", None)
         partner1 = request.POST.get("partner1", None)
         partner2 = request.POST.get("partner2", None)
@@ -134,8 +147,24 @@ def raidStage(request):
             sendRaidInvite(request.user.userID, partner1)
         if partner2 != "undefined":
             sendRaidInvite(request.user.userID, partner2)
+
+        if createRaid(request.user.userID, level):
+            return render(request, 'game/raid-staging.html', context)
+        else:
+            messages.warning(request, "Could not create Raid")
+            return redirect('game-raid')
+
+    else:
+        raid = getRaid(request.user.userID)
+        # TODO get other players, show status
+        context = {
+                "level": raid['raidLevel'],
+                "partners": [None, None]
+            }
         return render(request, 'game/raid-staging.html', context)
 
 
-def raidGetInvites(request):
-    return JsonResponse(getRaidInvites(request.user.userID))
+@login_required
+def raidPlay(request):
+    # TODO implement this lol
+    return None
