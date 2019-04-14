@@ -371,7 +371,7 @@ def generateMonsters(userID, rl):
         else:
             nm = r.randint(1, 3)
         for i in range(nm):
-            m_name = monster_names[r.randint(0, 3)]
+            m_name = monster_names[r.randint(0, len(monster_names))]
             m_health = max((r.randint(0, pl) + rl) // nm, 1)
             m_attack = max((r.randint(0, pl) + rl) // nm, 1)
             m_defense = max((r.randint(0, pl) + rl) // nm, 1)
