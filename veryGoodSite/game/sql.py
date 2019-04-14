@@ -319,7 +319,7 @@ def getRaidInvites(userID):
     responseData = {"invites": []}
     c = connection.cursor()
     try:
-        c.execute(" SELECT username \
+        c.execute(" SELECT username, senders.senderID \
                     FROM Account \
                     INNER JOIN \
                         (SELECT senderID FROM Invite \
@@ -328,9 +328,9 @@ def getRaidInvites(userID):
                   [userID])
         # responseData = fetchone()
         for tup in c.fetchall():
-            print(tup)
             responseData["invites"].append({
-                "senderUsername": tup[0]
+                "senderUsername": tup[0],
+                "senderID": tup[1]
                 })
     except Exception as e:
         if settings.DEBUG:
@@ -504,10 +504,10 @@ def getPartyNames(usernames):
 def updateRaid(raid):
     c = connection.cursor()
     try:
-        new_data = list(raid.values())[3:]
-        new_data.pop(6)
+        new_data = list(raid.values())[1:]
+        new_data.pop(8)
         new_data.append(raid['user1'])
-        c.execute("UPDATE Raid SET health1=%s, health2=%s, health3=%s, \
+        c.execute("UPDATE Raid SET userID2=%s, userID3=%s, health1=%s, health2=%s, health3=%s, \
                       move1=%s, move2=%s, move3=%s, stageing=%s\
                    WHERE userID1=%s;", new_data)
     except Exception as e:

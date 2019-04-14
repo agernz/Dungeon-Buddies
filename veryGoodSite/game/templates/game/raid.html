@@ -231,15 +231,16 @@
                     } else {
                       response["invites"].forEach(function(invite){
                         var newRow = document.createElement("UL")
-                        var sender = invite["senderUsername"]
+                        var senderUsername = invite["senderUsername"]
+                        var senderID = invite["senderID"]
                         newRow.className = "list-group-item ml-2 mr-2 raid-invite"
-                        newRow.innerHTML = `${sender} has invited you on a raid. Join now!`
+                        newRow.innerHTML = `${senderUsername} has invited you on a raid. Join now!`
                         inviteDiv.appendChild(newRow)
 
                         var joinBtn = document.createElement("button")
                         joinBtn.className = "join-raid-btn btn btn-primary mt-2"
-                        joinBtn.innerHTML = "Join Raid."
-                        joinBtn.id = `${sender}`
+                        joinBtn.innerHTML = "Join Raid"
+                        joinBtn.id = `${senderID}`
                         newRow.appendChild(joinBtn)
                       })
                     }
@@ -247,10 +248,7 @@
                 });
               };
               $(document).on('click', '.join-raid-btn', function() {
-                $.ajax({
-                  type: "GET",
-                  url: `{% url 'game-raid-join' %}?id=${this.id}`
-                });
+                window.location.href = `{% url 'game-raid-join' %}?id=${this.id}`
               });
 
               window.onload = getInvites;

@@ -181,14 +181,25 @@ def raidStage(request):
             "partners": [None, None],
             "is_owner": request.user.userID == raid['user1']
         }
+
         return render(request, 'game/raid-staging.html', context)
 
 @login_required
 def joinRaid(request):
-    id = request.GET.get('id')
-    
-    print(id)
-    return redirect('game-raid-play')
+    id = request.user.userID
+    raidUserID = request.GET.get('id')
+    raid = getRaid(raidUserID)
+    userInfo = getUserInfo(id)
+    if raid['user2'] == id or raid['user3'] == id:
+        print("joinRaid: Player {} already accepted".format(id))
+    elif not raid['user2']:
+        raid['user2'] = id
+        raid['health2'] = userInfo['health']
+    else:
+        raid['user3'] = id
+        raid['health3'] = userInfo['health']
+    updateRaid(raid)
+    return raidStage(request)
 
 
 # 1 == won, 0 == lost, -1 othewise
