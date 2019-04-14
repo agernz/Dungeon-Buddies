@@ -318,25 +318,20 @@ def sendRaidInvite(senderID, recieveID):
 
 def getRaidInvites(userID):
     responseData = {"invites": []}
-    timeToResponse = 45  # seconds
     c = connection.cursor()
     try:
-        c.execute(" SELECT username, time \
+        c.execute(" SELECT username \
                     FROM Account \
                     INNER JOIN \
-                        (SELECT senderID, time FROM Invite \
-                        WHERE recieveID=%s AND time >= %s) AS senders \
+                        (SELECT senderID FROM Invite \
+                        WHERE recieveID=%s) AS senders \
                         ON Account.userID = senders.senderID;",
-                  [userID, datetime.datetime.utcnow()
-                   - datetime.timedelta(seconds=timeToResponse)])
+                  [userID])
         # responseData = fetchone()
         for tup in c.fetchall():
-            timeLeft = datetime.timedelta(seconds=timeToResponse)
-            - (datetime.datetime.utcnow() - tup[1])
-            timeLeft = int(timeLeft.total_seconds())
+            print(tup)
             responseData["invites"].append({
-                "senderUsername": tup[0],
-                "timeLeft": timeLeft
+                "senderUsername": tup[0]
                 })
     except Exception as e:
         if settings.DEBUG:
@@ -364,7 +359,7 @@ def noMonsters(userID):
 
 def generateMonsters(userID, rl):
     succes = True
-    monster_names = ["Slime", "Skeleton", "Zombie", "Dennis"]
+    monster_names = ["Slime", "Skeleton", "Zombie", "Dennis", "Wolf", "Dragon", "Samurai", "Ninja", "Wisp", "Bear", "Giant Snake", "Giant Slime"]
     c = connection.cursor()
     try:
         c.execute("SELECT SUM(level) \
@@ -377,7 +372,7 @@ def generateMonsters(userID, rl):
         else:
             nm = r.randint(1, 3)
         for i in range(nm):
-            m_name = monster_names[r.randint(0, 3)]
+            m_name = monster_names[r.randint(0, len(monster_names))]
             m_health = max((r.randint(0, pl) + rl) // nm, 1)
             m_attack = max((r.randint(0, pl) + rl) // nm, 1)
             m_defense = max((r.randint(0, pl) + rl) // nm, 1)

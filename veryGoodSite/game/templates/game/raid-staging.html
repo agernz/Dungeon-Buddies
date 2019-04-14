@@ -16,8 +16,7 @@
 <h4>Partner 2: {{ partners.1 }}</h4>
 
 {% if is_owner %}
-<a href="{% url 'game-raid-play' %}">Start Raid!</a>
-<br>
-<a href="{% url 'game-raid' %}?cancel=1">Cancel Raid</a>
+<a class="btn btn-primary" href="{% url 'game-raid-play' %}">Start Raid!</a>
+<a class="btn btn-danger" href="{% url 'game-raid' %}?cancel=1">Cancel Raid</a>
 {% endif %}
 {% endblock %}

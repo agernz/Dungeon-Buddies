@@ -8,32 +8,42 @@
 {% endblock %}
 {% block content %}
 {% if has_won %}
-  <a href="{% url 'game-index' %}">Congrats! You Win!</a>
+  Raid complete! <a href="{% url 'game-index' %}">Click here to return.</a>
 {% elif has_lost %}
-  <a href="{% url 'game-index' %}">You were defeated...</a>
+  You were defeated. <a href="{% url 'game-index' %}">Click here to return.</a>
 {% else %}
-  <h4>Monsters...</h4>
+  <h4>Monsters</h4>
   {% for m in monsters %} 
-  <ul>
-    <li>name: {{ m.name }} health: {{ m.health }}</li>
+  {{ m.name }} ({{ m.health }} HP)
     {% if no_move and health != 0 and m.health != 0 %}
-    <a href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">attack {{ m.name }}</a>
+    <a class="btn btn-primary btn-sm" href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">attack {{ m.name }}</a>
     {% endif %}
-  </ul>
+  <br>
   {% endfor %} 
 
   <h4>Party</h4>
   {% for member in party %} 
-  <ul>
-    <li>name: {{ member.name }} health: {{ member.health }}</li>
-    {% if member.health == 0 %}<li>Dead</li>{% endif %}
-    {% if member.no_move and member.health != 0 %}<li>*no move*</li>{% elif member.health != 0 %}<li>Ready!</li>{% endif %}
-  </ul>
+  {{ member.name }}
+  {% if member.health == 0 %}
+   (dead)
+  {% else %}
+   ({{ member.health }} HP)
+  {% endif %}
+
+  {% if member.no_move and member.health != 0 %}
+  <div class="spinner-border" role="status">
+    <span class="sr-only">Waiting...</span>
+  </div>
+  {% elif member.health != 0 %}
+   Ready!
+  {% endif %}
+  <br>
   {% endfor %} 
 {% endif %}
+
+<ul class="list-group">
 {% for event in events %} 
-<ul>
-  <li>{{ event }}</li>
-</ul>
+  {{ event }}
 {% endfor %} 
+</ul>
 {% endblock content %}
