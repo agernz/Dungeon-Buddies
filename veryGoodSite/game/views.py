@@ -21,8 +21,29 @@ NUM_LEVELS = 5
 
 def index(request):
     if request.user.is_authenticated:
+        user = getUserInfo(request.user.userID)
+        bID = request.GET.get('bID')
+        if user['skillPoints'] > 0:
+            if bID == "1":
+                user['health'] += 1
+                user['skillPoints'] -= 1
+            elif bID == "2":
+                user['attack'] += 1
+                user['skillPoints'] -= 1
+            elif bID == "3":
+                user['defense'] += 1
+                user['skillPoints'] -= 1
+            elif bID == "4":
+                user['speed'] += 1
+                user['skillPoints'] -= 1
+            updateUserInfo(user)
+        if user['exp'] >= user['level']*5:
+            user['skillPoints'] += 2
+            user['exp'] -= user['level']*5
+            user['level'] += 1
+            updateUserInfo(user)
         return render(request, 'game/index.html',
-                      {"userInfo": getUserInfo(request.user.userID)})
+                      {"userInfo": user})
     return render(request, 'game/index.html')
 
 
@@ -398,3 +419,28 @@ def raidAttack(request):
         raid['move3'] = mID
     updateRaid(raid)
     return redirect('game-raid-play')
+
+def updateSkills(request):
+    user = getUserInfo(request.user.userID)
+    print(user)
+    bID = request.GET.get('bID')
+    if user['skillPoints'] > 0:
+        if bID == 1:
+            user['health'] += 1
+            user['skillPoints'] -= 1
+        elif bID == 2:
+            user['attack'] += 1
+            user['skillPoints'] -= 1
+        elif bID == 3:
+            user['defense'] += 1
+            user['skillPoints'] -= 1
+        elif bID == 4:
+            user['speed'] += 1
+            user['skillPoints'] -= 1
+        updateUserInfo(user)
+        print(user)
+    return render(request, 'game/index.html', {"userInfo": user['userID']})
+
+
+
+
