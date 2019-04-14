@@ -363,7 +363,7 @@ def noMonsters(userID):
 
 def generateMonsters(userID, rl):
     succes = True
-    monster_names = ["Slime", "Skeleton", "Zombie", "Dennis"]
+    monster_names = ["Slime", "Skeleton", "Zombie", "Dennis", "Wolf", "Dragon", "Samurai", "Ninja", "Wisp", "Bear", "Giant Snake", "Giant Slime"]
     c = connection.cursor()
     try:
         c.execute("SELECT SUM(level) \
