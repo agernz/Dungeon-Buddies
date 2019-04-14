@@ -7,21 +7,33 @@
   {% endif %}
 {% endblock %}
 {% block content %}
-<h4>Monsters...</h4>
-{% for m in monsters %} 
-<ul>
-  <li>name: {{ m.name }} health: {{ m.health }}</li>
-  {% if no_move %}
-    <a href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}">attack {{ m.name }}</a>
-  {% endif %}
-</ul>
-{% endfor %} 
+{% if has_won %}
+  <a href="{% url 'game-index' %}">Congrats! You Win!</a>
+{% elif has_lost %}
+  <a href="{% url 'game-index' %}">You were defeated...</a>
+{% else %}
+  <h4>Monsters...</h4>
+  {% for m in monsters %} 
+  <ul>
+    <li>name: {{ m.name }} health: {{ m.health }}</li>
+    {% if no_move and health != 0 %}
+    <a href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">attack {{ m.name }}</a>
+    {% endif %}
+  </ul>
+  {% endfor %} 
 
-<h4>Party</h4>
-{% for member in party %} 
+  <h4>Party</h4>
+  {% for member in party %} 
+  <ul>
+    <li>name: {{ member.name }} health: {{ member.health }}</li>
+    {% if health == 0 %}<li>Dead</li>{% endif %}
+    <li> {% if member.no_move and health != 0 %}*no move*{% else %} Ready! {% endif %} </li>
+  </ul>
+  {% endfor %} 
+{% endif %}
+{% for event in events %} 
 <ul>
-  <li>name: {{ member.name }} health: {{ member.health }}</li>
-  <li> {% if member.no_move %}*no move*{% endif %} </li>
+  <li>{{ event }}</li>
 </ul>
 {% endfor %} 
 {% endblock content %}
