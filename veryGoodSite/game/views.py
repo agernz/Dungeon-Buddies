@@ -58,7 +58,7 @@ def statsPage(request):
 
     if user:
         context['characterName'] = user['characterName']
-        context['experience'] = user['exp']
+        context['level'] = user['level']
         context['gold'] = user['gold']
         context['top100'] = getTop100()
         context['rank'] = getUserRank(request.user.userID)
@@ -110,6 +110,7 @@ def joinGuild(request):
 @login_required
 def raidPage(request):
     if request.GET.get('cancel') == '1':
+        deleteInvites(request.user.userID)
         deleteRaid(request.user.userID)
 
     raidStatus = getRaidStatus(request.user.userID)
@@ -138,6 +139,7 @@ def raidPage(request):
 
 @login_required
 def raidStage(request):
+    # TODO allow members to join raid
     if request.method == "POST":
         level = request.POST.get("level", None)
         pid1 = request.POST.get("partner1", None)
@@ -192,6 +194,23 @@ def hasWonOrLost(raid, monsters):
     return 1
 
 
+def endRaid(actors, raid, has_won):
+    for user in actors:
+        keys = user.keys()
+        if 'userID' in keys:
+            if 'move' in keys:
+                del user['move']
+            if 'raid_health' in keys:
+                del user['raid_health']
+            if has_won:
+                user['exp'] += raid['raidLevel']
+                user['gold'] += math.floor(raid['raidLevel'] * 1.5)
+            else:
+                user['exp'] += 1
+                user['gold'] = max(0, user['gold'] - raid['raidLevel'])
+            updateUserInfo(user)
+
+
 def playerAttack(player, monsters):
     if r.randint(0, 100) < 5:
         return ()
@@ -219,6 +238,7 @@ def monsterAttack(monster, players, raid):
     monster_attack_value = max(1, monster['attack'] - players[pid]['defense']
                                + var_attack)
     player_heatlth = max(0, player_heatlth - monster_attack_value)
+    players[pid]['raid_health'] = player_heatlth
 
     player_id = players[pid]['userID']
     if player_id == raid['user1']:
@@ -228,6 +248,11 @@ def monsterAttack(monster, players, raid):
     if player_id == raid['user3']:
         raid['health3'] = player_heatlth
 
+    charName = players[pid]['characterName']
+    if player_heatlth == 0:
+        players.pop(pid)
+    return (charName, monster_attack_value)
+
 
 @login_required
 def raidPlay(request):
@@ -235,6 +260,8 @@ def raidPlay(request):
     # TODO allow player to leave raid, they lose gold
 
     raid = getRaid(request.user.userID)
+    if not raid:
+        return redirect('game-raid')
     pk = raid['user1']
 
     # first time check for starting raid
@@ -248,15 +275,31 @@ def raidPlay(request):
         generateMonsters(pk, raid['raidLevel'])
     monsters = getMonsters(pk)
 
+    # check for win/loss
+    wl = hasWonOrLost(raid, monsters)
+    has_won = 1 == wl
+    has_lost = 0 == wl
+
+    userIDs = [raid['user1'], raid['user2'], raid['user3']]
+    if has_won or has_lost:
+        if request.user.userID == pk:
+            players = []
+            for uid in userIDs:
+                uInfo = getUserInfo(uid)
+                players.append(uInfo)
+            endRaid(players, raid, has_won)
+            deleteRaid(pk)
+        return redirect('game-raid')
+
     # carry out attacks if everyone is ready
     all_ready = True
     userIDs = [raid['user1'], raid['user2'], raid['user3']]
     userMoves = [raid['move1'], raid['move2'], raid['move3']]
-    for uid, um in zip(userIDs, userMoves):
-        if uid and um is None:
+    userHealth = [raid['health1'], raid['health2'], raid['health3']]
+    for uid, um, health in zip(userIDs, userMoves, userHealth):
+        if uid and health != 0 and um is None:
             all_ready = False
 
-    userHealth = [raid['health1'], raid['health2'], raid['health3']]
     event_log = []
     if all_ready:
         actors = []
@@ -271,10 +314,11 @@ def raidPlay(request):
 
         # sort monsters and players by speed
         actors.extend(monsters)
-        sorted(actors, key=lambda k: k['speed'])
+        actors = sorted(actors, key=lambda k: k['speed'], reverse=True)
 
         for actor in actors:
-            if 'userID' in actor.keys():
+            is_player = 'userID' in actor.keys()
+            if is_player and actor['raid_health']:
                 event = playerAttack(actor, monsters)
                 if event:
                     event_log.append("{0} attacked {1} for {2} damage!"
@@ -283,7 +327,7 @@ def raidPlay(request):
                 else:
                     event_log.append("{0} missed!"
                                      .format(actor['characterName']))
-            elif actor['health']:
+            elif not is_player and actor['health']:
                 event = monsterAttack(actor, players, raid)
                 if event:
                     event_log.append("{0} attacked {1} for {2} damage!"
@@ -293,10 +337,10 @@ def raidPlay(request):
                     event_log.append("{0} missed!"
                                      .format(actor['name']))
         updateMonsters(monsters)
-        updateRaid(raid)
         raid['move1'] = None
         raid['move2'] = None
         raid['move3'] = None
+        updateRaid(raid)
 
     # build UI components
     this_user = request.user.userID
@@ -322,15 +366,8 @@ def raidPlay(request):
     has_won = 1 == wl
     has_lost = 0 == wl
 
-    if has_won or has_lost:
-        user = getUserInfo(this_user)
-        if has_won:
-            user['exp'] += raid['raidLevel']
-            user['gold'] += math.floor(raid['raidLevel'] * 1.5)
-        elif has_lost:
-            user['exp'] += 1
-            user['gold'] = max(0, user['gold'] - raid['raidLevel'])
-        updateUserInfo(user)
+    if has_won or has_lost and this_user == pk:
+        endRaid(actors, raid, has_won)
         deleteRaid(pk)
 
     context = {
@@ -349,6 +386,8 @@ def raidPlay(request):
 def raidAttack(request):
     pk = request.GET.get('pk')
     raid = getRaid(pk)
+    if not raid:
+        return redirect('game-raid')
     uid = request.user.userID
     mID = request.GET.get('mID')
     if uid == raid['user1'] and raid['health1'] != 0:
