@@ -15,7 +15,8 @@ from game.sql import (
     updateMonsters, updateUserInfo
 )
 
-
+# TODO leave
+# TODO stageing when no raid error
 NUM_LEVELS = 5
 
 
@@ -225,9 +226,9 @@ def playerAttack(player, monsters):
 
 
 def monsterAttack(monster, players, raid):
-    if r.randint(0, 100) < 10:
-        return ()
     p_len = len(players) - 1
+    if p_len < 0 or r.randint(0, 100) < 10:
+        return ()
     if p_len != 0:
         pid = r.randint(0, p_len)
     else:
