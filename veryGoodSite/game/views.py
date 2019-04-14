@@ -183,6 +183,13 @@ def raidStage(request):
         }
         return render(request, 'game/raid-staging.html', context)
 
+@login_required
+def joinRaid(request):
+    id = request.GET.get('id')
+    
+    print(id)
+    return redirect('game-raid-play')
+
 
 # 1 == won, 0 == lost, -1 othewise
 def hasWonOrLost(raid, monsters):
