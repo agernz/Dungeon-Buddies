@@ -17,7 +17,7 @@
   <ul>
     <li>name: {{ m.name }} health: {{ m.health }}</li>
     {% if no_move and health != 0 and m.health != 0 %}
-    <a href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">attack {{ m.name }}</a>
+    <a id="attack-btn" href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">attack {{ m.name }}</a>
     {% endif %}
   </ul>
   {% endfor %} 
@@ -36,4 +36,30 @@
   <li>{{ event }}</li>
 </ul>
 {% endfor %} 
+<script>
+    var raidSocket = new WebSocket('ws://' + window.location.host + '/ws/raid/');
+
+    raidSocket.onmessage = function(e) {
+      console.log('onMessage')
+      var data = JSON.parse(e.data);
+      var pk = data['pk'];
+      var events = data['events'];
+      console.log(pk, events)
+    };
+
+    raidSocket.onclose = function(e) {
+      console.error(e);
+    };
+
+
+    document.querySelector('#attack-btn').onclick = function(e) {
+      console.log('onClick')
+      var pk = {{ pk }};
+      var events = ["test", "attac"];
+      raidSocket.send(JSON.stringify({
+          'pk': pk,
+          'events': events
+      }));
+    };
+</script>
 {% endblock content %}
