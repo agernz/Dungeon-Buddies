@@ -16,7 +16,7 @@
   {% for m in monsters %} 
   <ul>
     <li>name: {{ m.name }} health: {{ m.health }}</li>
-    {% if no_move and health != 0 %}
+    {% if no_move and health != 0 and m.health != 0 %}
     <a href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">attack {{ m.name }}</a>
     {% endif %}
   </ul>
@@ -26,8 +26,8 @@
   {% for member in party %} 
   <ul>
     <li>name: {{ member.name }} health: {{ member.health }}</li>
-    {% if health == 0 %}<li>Dead</li>{% endif %}
-    <li> {% if member.no_move and health != 0 %}*no move*{% else %} Ready! {% endif %} </li>
+    {% if member.health == 0 %}<li>Dead</li>{% endif %}
+    {% if member.no_move and member.health != 0 %}<li>*no move*</li>{% elif member.health != 0 %}<li>Ready!</li>{% endif %}
   </ul>
   {% endfor %} 
 {% endif %}
