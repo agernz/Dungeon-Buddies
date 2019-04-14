@@ -143,8 +143,8 @@ def raidPage(request):
 
     levels = []
     for l in range(1, NUM_LEVELS + 1):
-        levels.append({"description": "You may recieve {0} gold and {1} exp \
-                       or lose {2} gold"
+        levels.append({"description": "Reward: {0} gold and {1} exp. \
+                       Lose {2} gold on failure."
                        .format(math.floor(l * 1.5), l, math.ceil(l * 1.5))})
 
     context = {

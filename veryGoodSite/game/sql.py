@@ -357,70 +357,74 @@ def noMonsters(userID):
     return no_monsters
 
 
-def generateMonsters(userID, rl):
-    succes = True
-    monster_names = ["Slime", "Skeleton", "Zombie", "Dennis", "Wolf", "Dragon", "Samurai", "Ninja", "Wisp", "Bear", "Giant Snake", "Giant Slime"]
+def generateMonsters(userID, raid_level):
+    success = True
+    monster_names = [
+        "Slime", "Skeleton", "Zombie", "Wolf", "Dragon", "Samurai", "Ninja",
+        "Wisp", "Bear", "Giant Snake", "Giant Slime"
+    ]
     c = connection.cursor()
     try:
         c.execute("SELECT SUM(level) \
                    FROM Account as a, Raid as r \
                    WHERE r.userID1=%s AND (a.userID=r.userID1 \
                    OR a.userID=r.userID2 OR a.userID=r.userID3);", [userID])
-        pl = c.fetchone()[0]
-        if rl == 1:
-            nm = 1
+        party_level = c.fetchone()[0]
+        if raid_level == 1:
+            num_monsters = 1
         else:
-            nm = r.randint(1, 3)
-        for i in range(nm):
-            m_name = monster_names[r.randint(0, len(monster_names))]
-            m_health = max((r.randint(0, pl) + rl) // nm, 1)
-            m_attack = max((r.randint(0, pl) + rl) // nm, 1)
-            m_defense = max((r.randint(0, pl) + rl) // nm, 1)
-            m_speed = max((r.randint(0, pl) + rl) // nm, 1)
+            num_monsters = r.randint(1, 3)
+        for i in range(num_monsters):
+            m_name = r.choice(monster_names)
+            m_level = max(party_level, 5 * (2*raid_level - 1))
+            m_health = max(r.randint(0, m_level) // num_monsters, 1)
+            m_attack = max(r.randint(0, m_level // 3) // num_monsters, 1)
+            m_defense = max(r.randint(0, m_level // 3) // num_monsters, 1)
+            m_speed = max(r.randint(0, m_level // 3) // num_monsters, 1)
             c.execute("INSERT INTO Monster(raidID, name, health, attack, defense, \
                       speed) VALUES(%s, %s, %s, %s, %s, %s);",
                       [userID, m_name, m_health, m_attack, m_defense, m_speed])
     except Exception as e:
-        succes = False
+        success = False
         if settings.DEBUG:
             print("generateMonsters:", e)
     finally:
         c.close()
-    return succes
+    return success
 
 
 def createRaid(userID, level, health):
     c = connection.cursor()
-    succes = True
+    success = True
     try:
         c.execute("INSERT INTO Raid(userID1, raidLevel, health1) \
                    VALUES(%s, %s, %s);",
                   [userID, level, health])
     except Exception as e:
-        succes = False
+        success = False
         if settings.DEBUG:
             print("createRaid:", e)
     finally:
         c.close()
-    return succes
+    return success
 
 
 def getRaidStatus(userID):
     c = connection.cursor()
-    is_stageing = -1
+    is_staging = -1
     try:
         c.execute("SELECT stageing FROM Raid WHERE userID1=%s \
                   OR userID2=%s OR userID3=%s;",
                   [userID, userID, userID])
         res = c.fetchone()
         if res:
-            is_stageing = res[0]
+            is_staging = res[0]
     except Exception as e:
         if settings.DEBUG:
             print("getRaidStatus:", e)
     finally:
         c.close()
-    return is_stageing
+    return is_staging
 
 
 def getRaid(userID):
