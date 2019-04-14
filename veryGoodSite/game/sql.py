@@ -4,28 +4,44 @@ import random as r
 import datetime
 
 
-def getUserInfo(userID, uname):
+def getUserInfo(userID):
     c = connection.cursor()
     userInfo = {}
     try:
-        c.execute("SELECT characterName, experience, gold \
-                    health, attack, defense, speed \
-                    FROM Account WHERE userID=%s;", [userID])
+        c.execute("SELECT * FROM Account WHERE userID=%s;", [userID])
         uInfo = c.fetchone()
-        userInfo["username"] = uname
-        userInfo["charName"] = uInfo[0]
-        userInfo["exp"] = uInfo[1]
-        userInfo["gold"] = uInfo[2]
-        userInfo["health"] = uInfo[3]
-        userInfo["attack"] = uInfo[4]
-        userInfo["defense"] = uInfo[5]
-        userInfo["speed"] = uInfo[6]
+        userInfo["userID"] = uInfo[0]
+        userInfo["username"] = uInfo[1]
+        userInfo["characterName"] = uInfo[3]
+        userInfo["exp"] = uInfo[4]
+        userInfo["gold"] = uInfo[5]
+        userInfo["guildID"] = uInfo[6]
+        userInfo["level"] = uInfo[7]
+        userInfo["health"] = uInfo[8]
+        userInfo["attack"] = uInfo[9]
+        userInfo["defense"] = uInfo[10]
+        userInfo["speed"] = uInfo[11]
     except Exception as e:
         if settings.DEBUG:
             print("getUserInfo:", e)
     finally:
         c.close()
     return userInfo
+
+
+def updateUserInfo(user):
+    c = connection.cursor()
+    try:
+        new_data = list(user.values())[1:]
+        new_data.append(user['userID'])
+        c.execute("UPDATE Account SET username=%s, characterName=%s, experience=%s, \
+                      gold=%s, guildID=%s, level=%s, health=%s, attack=%s, \
+                      defense=%s, speed=%s WHERE userID=%s;", new_data)
+    except Exception as e:
+        if settings.DEBUG:
+            print("updateUserInfo:", e)
+    finally:
+        c.close()
 
 
 def getUserRank(userID):
@@ -161,7 +177,7 @@ def getGuildMembers(userID, guildID, includeSelf=True):
         "exp": ""
     }
     try:
-        c.execute("SELECT userID, username, characterName, experience \
+        c.execute("SELECT userID, username, characterName, level \
             FROM Account \
             WHERE Account.userID IN ( \
               SELECT userID \
@@ -174,7 +190,7 @@ def getGuildMembers(userID, guildID, includeSelf=True):
                 continue
             members.append({"userID": member[0],
                             "name": member[1], "charName": member[2],
-                            "exp": member[3]})
+                            "level": member[3]})
     except Exception as e:
         if settings.DEBUG:
             print("getGuildMembers:", e)
@@ -193,6 +209,17 @@ def sendGuildInvite(username, guildID):
     except Exception as e:
         if settings.DEBUG:
             print("sendGuildInvite:", e)
+    finally:
+        c.close()
+
+
+def deleteInvites(senderID):
+    c = connection.cursor()
+    try:
+        c.execute("DELETE FROM Invite WHERE senderID=%s;", [senderID])
+    except Exception as e:
+        if settings.DEBUG:
+            print("deleteInvites:", e)
     finally:
         c.close()
 
@@ -344,13 +371,16 @@ def generateMonsters(userID, rl):
                    WHERE r.userID1=%s AND (a.userID=r.userID1 \
                    OR a.userID=r.userID2 OR a.userID=r.userID3);", [userID])
         pl = c.fetchone()[0]
-        nm = r.randint(1, 3)
+        if rl == 1:
+            nm = 1
+        else:
+            nm = r.randint(1, 3)
         for i in range(nm):
             m_name = monster_names[r.randint(0, 3)]
-            m_health = (r.randint(1, pl) + rl) // nm
-            m_attack = (r.randint(1, pl) + rl) // nm
-            m_defense = (r.randint(1, pl) + rl) // nm
-            m_speed = (r.randint(1, pl) + rl) // nm
+            m_health = min((r.randint(1, pl) + rl) // nm, 1)
+            m_attack = min((r.randint(1, pl) + rl) // nm, 1)
+            m_defense = min((r.randint(1, pl) + rl) // nm, 1)
+            m_speed = min((r.randint(1, pl) + rl) // nm, 1)
             c.execute("INSERT INTO Monster(raidID, name, health, attack, defense, \
                       speed) VALUES(%s, %s, %s, %s, %s, %s);",
                       [userID, m_name, m_health, m_attack, m_defense, m_speed])
@@ -386,7 +416,9 @@ def getRaidStatus(userID):
         c.execute("SELECT stageing FROM Raid WHERE userID1=%s \
                   OR userID2=%s OR userID3=%s;",
                   [userID, userID, userID])
-        is_stageing = c.fetchone()[0]
+        res = c.fetchone()
+        if res:
+            is_stageing = res[0]
     except Exception as e:
         if settings.DEBUG:
             print("getRaidStatus:", e)
@@ -445,13 +477,13 @@ def getMonsters(userID):
     return monsters
 
 
-def updateMonsters(userID, monsters):
+def updateMonsters(monsters):
     c = connection.cursor()
     try:
         for m in monsters:
-            c.execute("UPDATE Monster SET health=%si \
-                      WHERE monsterID=%s AND raidID=%s;",
-                      [m.health, m.monsterID, userID])
+            c.execute("UPDATE Monster SET health=%s \
+                      WHERE monsterID=%s;",
+                      [m['health'], m['monsterID']])
     except Exception as e:
         if settings.DEBUG:
             print("updateMonsters:", e)
@@ -472,3 +504,30 @@ def getPartyNames(usernames):
     finally:
         c.close()
     return partyNames
+
+
+def updateRaid(raid):
+    c = connection.cursor()
+    try:
+        new_data = list(raid.values())[3:]
+        new_data.pop(6)
+        new_data.append(raid['user1'])
+        c.execute("UPDATE Raid SET health1=%s, health2=%s, health3=%s, \
+                      move1=%s, move2=%s, move3=%s, stageing=%s\
+                   WHERE userID1=%s;", new_data)
+    except Exception as e:
+        if settings.DEBUG:
+            print("updateRaid:", e)
+    finally:
+        c.close()
+
+
+def deleteRaid(userID):
+    c = connection.cursor()
+    try:
+        c.execute("DELETE FROM Raid WHERE userID1=%s;", [userID])
+    except Exception as e:
+        if settings.DEBUG:
+            print("deleteRaid:", e)
+    finally:
+        c.close()
