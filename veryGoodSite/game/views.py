@@ -4,6 +4,7 @@ from django.contrib import messages
 from game.forms.GuildForm import GuildForm
 from game.forms.InviteForm import InviteForm
 from django.http import JsonResponse
+from django.utils import safestring
 import math
 import random as r
 from game.sql import (
@@ -328,21 +329,21 @@ def raidPlay(request):
             if is_player and actor['raid_health']:
                 event = playerAttack(actor, monsters)
                 if event:
-                    event_log.append("{0} attacked {1} for {2} damage!"
+                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-success'>{0} attacked {1} for {2} damage!</li>"
                                      .format(actor['characterName'],
-                                             event[0], event[1]))
+                                             event[0], event[1])))
                 else:
-                    event_log.append("{0} missed!"
-                                     .format(actor['characterName']))
+                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-secondary'>{0} missed!</li>"
+                                     .format(actor['characterName'])))
             elif not is_player and actor['health']:
                 event = monsterAttack(actor, players, raid)
                 if event:
-                    event_log.append("{0} attacked {1} for {2} damage!"
+                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-danger'>{0} attacked {1} for {2} damage!</li>"
                                      .format(actor['name'],
-                                             event[0], event[1]))
+                                             event[0], event[1])))
                 else:
-                    event_log.append("{0} missed!"
-                                     .format(actor['name']))
+                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-secondary'>{} missed!</li>"
+                                     .format(actor['name'])))
         updateMonsters(monsters)
         raid['move1'] = None
         raid['move2'] = None

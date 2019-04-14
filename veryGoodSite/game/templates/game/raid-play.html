@@ -17,7 +17,7 @@
   <ul>
     <li>name: {{ m.name }} health: {{ m.health }}</li>
     {% if no_move and health != 0 and m.health != 0 %}
-    <a href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">attack {{ m.name }}</a>
+    <a class="btn btn-primary btn-sm" href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">attack {{ m.name }}</a>
     {% endif %}
   </ul>
   {% endfor %} 
@@ -32,8 +32,8 @@
   {% endfor %} 
 {% endif %}
 {% for event in events %} 
-<ul>
-  <li>{{ event }}</li>
+<ul class="list-group">
+  {{ event }}
 </ul>
 {% endfor %} 
 {% endblock content %}
