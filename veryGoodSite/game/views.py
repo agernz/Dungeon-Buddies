@@ -134,7 +134,7 @@ def raidPage(request):
     if request.GET.get('cancel') == '1':
         deleteInvites(request.user.userID)
         deleteRaid(request.user.userID)
-
+    
     raidStatus = getRaidStatus(request.user.userID)
     if raidStatus == 1:
         return redirect("game-raid-stage")
@@ -459,7 +459,3 @@ def updateSkills(request):
         updateUserInfo(user)
         print(user)
     return render(request, 'game/index.html', {"userInfo": user['userID']})
-
-
-
-

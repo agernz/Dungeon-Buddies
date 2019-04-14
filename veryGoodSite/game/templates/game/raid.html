@@ -250,7 +250,7 @@
               $(document).on('click', '.join-raid-btn', function() {
                 window.location.href = `{% url 'game-raid-join' %}?id=${this.id}`
               });
-
+              
               window.onload = getInvites;
               window.setInterval(function(){ getInvites(); }, 50000)
             </script>
