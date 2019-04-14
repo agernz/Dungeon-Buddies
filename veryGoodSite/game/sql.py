@@ -126,17 +126,17 @@ def getTop100():
     accountInfo = {
         "username": "",
         "charName": "",
-        "exp": "",
+        "level": "",
         "gold": ""
     }
     try:
-        c.execute(" SELECT username, characterName, experience, gold \
+        c.execute(" SELECT username, characterName, level, gold \
                     FROM Account \
                     ORDER BY gold desc limit 100;")
         accountInfo = c.fetchall()
         for account in accountInfo:
             accounts.append({"username": account[0], "charName": account[1],
-                             "exp": account[2], "gold": account[3]})
+                             "level": account[2], "gold": account[3]})
     except Exception as e:
         if settings.DEBUG:
             print("getTop100:", e)
@@ -377,10 +377,10 @@ def generateMonsters(userID, rl):
             nm = r.randint(1, 3)
         for i in range(nm):
             m_name = monster_names[r.randint(0, 3)]
-            m_health = min((r.randint(1, pl) + rl) // nm, 1)
-            m_attack = min((r.randint(1, pl) + rl) // nm, 1)
-            m_defense = min((r.randint(1, pl) + rl) // nm, 1)
-            m_speed = min((r.randint(1, pl) + rl) // nm, 1)
+            m_health = max((r.randint(0, pl) + rl) // nm, 1)
+            m_attack = max((r.randint(0, pl) + rl) // nm, 1)
+            m_defense = max((r.randint(0, pl) + rl) // nm, 1)
+            m_speed = max((r.randint(0, pl) + rl) // nm, 1)
             c.execute("INSERT INTO Monster(raidID, name, health, attack, defense, \
                       speed) VALUES(%s, %s, %s, %s, %s, %s);",
                       [userID, m_name, m_health, m_attack, m_defense, m_speed])
