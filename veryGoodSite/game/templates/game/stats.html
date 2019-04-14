@@ -29,7 +29,7 @@
             <th scope="col">#</th>
             <th scope="col">User</th>
             <th scope="col">Character</th>
-            <th scope="col">Experience</th>
+            <th scope="col">Level</th>
             <th scope="col">Gold</th>
           </tr>
         </thead>
@@ -39,7 +39,7 @@
               <th scope="row">{{ forloop.counter }}</th>
               <td>{{ account.username }}</td>
               <td>{{ account.charName }}</td>
-              <td>{{ account.exp }}</td>
+              <td>{{ account.level }}</td>
               <td>{{ account.gold }}</td>
             </tr>
           {% endfor %}
