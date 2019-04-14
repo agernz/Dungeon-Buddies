@@ -21,6 +21,7 @@ def getUserInfo(userID):
         userInfo["attack"] = uInfo[9]
         userInfo["defense"] = uInfo[10]
         userInfo["speed"] = uInfo[11]
+        userInfo["skillPoints"] = uInfo[12]
     except Exception as e:
         if settings.DEBUG:
             print("getUserInfo:", e)
@@ -36,7 +37,7 @@ def updateUserInfo(user):
         new_data.append(user['userID'])
         c.execute("UPDATE Account SET username=%s, characterName=%s, experience=%s, \
                       gold=%s, guildID=%s, level=%s, health=%s, attack=%s, \
-                      defense=%s, speed=%s WHERE userID=%s;", new_data)
+                      defense=%s, speed=%s, skillPoints=%s WHERE userID=%s;", new_data)
     except Exception as e:
         if settings.DEBUG:
             print("updateUserInfo:", e)
@@ -358,7 +359,7 @@ def noMonsters(userID):
 
 def generateMonsters(userID, rl):
     succes = True
-    monster_names = ["Slime", "Skeleton", "Zombie", "Dennis"]
+    monster_names = ["Slime", "Skeleton", "Zombie", "Dennis", "Wolf", "Dragon", "Samurai", "Ninja", "Wisp", "Bear", "Giant Snake", "Giant Slime"]
     c = connection.cursor()
     try:
         c.execute("SELECT SUM(level) \
@@ -371,7 +372,7 @@ def generateMonsters(userID, rl):
         else:
             nm = r.randint(1, 3)
         for i in range(nm):
-            m_name = monster_names[r.randint(0, 3)]
+            m_name = monster_names[r.randint(0, len(monster_names))]
             m_health = max((r.randint(0, pl) + rl) // nm, 1)
             m_attack = max((r.randint(0, pl) + rl) // nm, 1)
             m_defense = max((r.randint(0, pl) + rl) // nm, 1)

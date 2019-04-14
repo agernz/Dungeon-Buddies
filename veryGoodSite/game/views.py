@@ -4,6 +4,7 @@ from django.contrib import messages
 from game.forms.GuildForm import GuildForm
 from game.forms.InviteForm import InviteForm
 from django.http import JsonResponse
+from django.utils import safestring
 import math
 import random as r
 from game.sql import (
@@ -21,8 +22,29 @@ NUM_LEVELS = 5
 
 def index(request):
     if request.user.is_authenticated:
+        user = getUserInfo(request.user.userID)
+        bID = request.GET.get('bID')
+        if user['skillPoints'] > 0:
+            if bID == "1":
+                user['health'] += 1
+                user['skillPoints'] -= 1
+            elif bID == "2":
+                user['attack'] += 1
+                user['skillPoints'] -= 1
+            elif bID == "3":
+                user['defense'] += 1
+                user['skillPoints'] -= 1
+            elif bID == "4":
+                user['speed'] += 1
+                user['skillPoints'] -= 1
+            updateUserInfo(user)
+        if user['exp'] >= user['level']*5:
+            user['skillPoints'] += 2
+            user['exp'] -= user['level']*5
+            user['level'] += 1
+            updateUserInfo(user)
         return render(request, 'game/index.html',
-                      {"userInfo": getUserInfo(request.user.userID)})
+                      {"userInfo": user})
     return render(request, 'game/index.html')
 
 
@@ -339,21 +361,21 @@ def raidPlay(request):
             if is_player and actor['raid_health']:
                 event = playerAttack(actor, monsters)
                 if event:
-                    event_log.append("{0} attacked {1} for {2} damage!"
+                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-success'>{0} attacked {1} for {2} damage!</li>"
                                      .format(actor['characterName'],
-                                             event[0], event[1]))
+                                             event[0], event[1])))
                 else:
-                    event_log.append("{0} missed!"
-                                     .format(actor['characterName']))
+                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-secondary'>{0} missed!</li>"
+                                     .format(actor['characterName'])))
             elif not is_player and actor['health']:
                 event = monsterAttack(actor, players, raid)
                 if event:
-                    event_log.append("{0} attacked {1} for {2} damage!"
+                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-danger'>{0} attacked {1} for {2} damage!</li>"
                                      .format(actor['name'],
-                                             event[0], event[1]))
+                                             event[0], event[1])))
                 else:
-                    event_log.append("{0} missed!"
-                                     .format(actor['name']))
+                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-secondary'>{} missed!</li>"
+                                     .format(actor['name'])))
         updateMonsters(monsters)
         raid['move1'] = None
         raid['move2'] = None
@@ -416,3 +438,28 @@ def raidAttack(request):
         raid['move3'] = mID
     updateRaid(raid)
     return redirect('game-raid-play')
+
+def updateSkills(request):
+    user = getUserInfo(request.user.userID)
+    print(user)
+    bID = request.GET.get('bID')
+    if user['skillPoints'] > 0:
+        if bID == 1:
+            user['health'] += 1
+            user['skillPoints'] -= 1
+        elif bID == 2:
+            user['attack'] += 1
+            user['skillPoints'] -= 1
+        elif bID == 3:
+            user['defense'] += 1
+            user['skillPoints'] -= 1
+        elif bID == 4:
+            user['speed'] += 1
+            user['skillPoints'] -= 1
+        updateUserInfo(user)
+        print(user)
+    return render(request, 'game/index.html', {"userInfo": user['userID']})
+
+
+
+

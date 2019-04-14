@@ -33,10 +33,29 @@
                     Level: {{ userInfo.level }}
                   </div>
                   <div class="row">
-                    exp: {{ userInfo.exp }}
+                    Experience: {{ userInfo.exp }}
                   </div>
                   <div class="row">
                     Gold: {{ userInfo.gold }}
+                  </div>
+                  <div class="row">
+                    Health: {{ userInfo.health }}
+                    <a href="{% url 'game-index' %}?bID=1" class="btn-sm btn-primary btn-lg active" role="button" aria-pressed="true">Increase Health</a>
+                  </div>
+                  <div class="row">
+                    Attack: {{ userInfo.attack }}
+                    <a href="{% url 'game-index' %}?bID=2" class="btn-sm btn-primary btn-lg active" role="button" aria-pressed="true">Increase Attack</a>
+                  </div>
+                  <div class="row">
+                    Defense: {{ userInfo.defense }}
+                    <a href="{% url 'game-index' %}?bID=3" class="btn-sm btn-primary btn-lg active" role="button" aria-pressed="true">Increase Defense</a>
+                  </div>
+                  <div class="row">
+                    Speed: {{ userInfo.speed }}
+                    <a href="{% url 'game-index' %}?bID=4" class="btn-sm btn-primary btn-lg active" role="button" aria-pressed="true">Increase Speed</a>
+                  </div>
+                  <div class="row">
+                    Skill Points Available: {{ userInfo.skillPoints }}
                   </div>
                 </div>
               </div>
