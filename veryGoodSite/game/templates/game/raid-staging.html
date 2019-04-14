@@ -1,4 +1,5 @@
 {% extends "game/base.html" %}
+{% load static %}
 {% block menu %}
   {% if user.is_authenticated %}
     {% include "game/navbar-logged-in.html" %}
@@ -11,12 +12,27 @@
   $(".nav-item").removeClass('active')
   $("#raidNavLink").addClass('active')
 </script>
-<h4>Starting a Level {{ level }} raid. Get Ready!</h4>
-<h4>Partner 1: {{ partners.0 }}</h4>
-<h4>Partner 2: {{ partners.1 }}</h4>
-
-{% if is_owner %}
-<a class="btn btn-primary" href="{% url 'game-raid-play' %}">Start Raid!</a>
-<a class="btn btn-danger" href="{% url 'game-raid' %}?cancel=1">Cancel Raid</a>
-{% endif %}
+<div class="container h-100">
+  <div class="row align-items-center h-100">
+    <div class="col-lg-8 col-sm colm-md mx-auto mt-3 text-center">
+      <style type="text/css">
+        .thumbnail {
+            border: 0 none;
+            box-shadow: none;
+        }
+      </style>
+      <div class="row">
+        <div class="col-3"><img src="{% static 'game/spikeflipped.png' %}" class="thumbnail"></div>
+        <div class="col"><h2>Start your Level {{ level }} raid.<br>Get Ready!</h2></div>
+        <div class="col-3"><img src="{% static 'game/arrow.png' %}" class="thumbnail"></div>
+      </div>
+      <h4>Partner 1: {{ partners.0 }}</h4>
+      <h4>Partner 2: {{ partners.1 }}</h4>
+      {% if is_owner %}
+        <a class="btn btn-primary mr-2" href="{% url 'game-raid-play' %}">Start Raid!</a>
+        <a class="btn btn-danger ml-2" href="{% url 'game-raid' %}?cancel=1">Cancel Raid</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}
