@@ -11,6 +11,7 @@ CREATE TABLE Account (
   attack INT UNSIGNED default 1,
   defense INT UNSIGNED default 1,
   speed INT UNSIGNED default 1,
+  skillPoints INT UNSIGNED default 0,
   PRIMARY KEY (userID)
 );
 
