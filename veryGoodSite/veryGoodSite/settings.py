@@ -26,11 +26,12 @@ SECRET_KEY = '1&ffsh2*sb6*r_uih1&!1juh%y_7xf+e)%2b9--4!*-41&*&gw'
 DEBUG = True
 
 ALLOWED_HOSTS = ['0.0.0.0', '192.168.99.100']
-
+ASGI_APPLICATION = 'veryGoodSite.routing.application'
 
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'register.apps.RegisterConfig',
     'game.apps.GameConfig',
     'crispy_forms',
