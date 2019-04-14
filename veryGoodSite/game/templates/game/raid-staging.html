@@ -17,5 +17,7 @@
 
 {% if is_owner %}
 <a href="{% url 'game-raid-play' %}">Start Raid!</a>
+<br>
+<a href="{% url 'game-raid' %}?cancel=1">Cancel Raid</a>
 {% endif %}
 {% endblock %}
