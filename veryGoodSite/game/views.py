@@ -5,24 +5,24 @@ from game.forms.GuildForm import GuildForm
 from game.forms.InviteForm import InviteForm
 from django.http import JsonResponse
 import math
+import random as r
 from game.sql import (
     getUserInfo, leaveGuild, getGuildInvites, getGuildMembers, getGuildRank,
     getTop100, getUserRank, getUserGuild, getTop100Guilds, createNewGuild,
     sendGuildInvite, joinGuildMember, sendRaidInvite, getRaidInvites,
     createRaid, getRaidStatus, getRaid, getMonsters, getPartyNames,
-    generateMonsters, noMonsters
+    generateMonsters, noMonsters, updateRaid, deleteRaid, deleteInvites,
+    updateMonsters, updateUserInfo
 )
 
 
-# TODO delete old invites, maybe remove time?
 NUM_LEVELS = 5
 
 
 def index(request):
     if request.user.is_authenticated:
         return render(request, 'game/index.html',
-                      {"userInfo": getUserInfo(request.user.userID,
-                                               request.user.username)})
+                      {"userInfo": getUserInfo(request.user.userID)})
     return render(request, 'game/index.html')
 
 
@@ -53,11 +53,11 @@ def guildPage(request, form=GuildForm()):
 
 @login_required
 def statsPage(request):
-    user = getUserInfo(request.user.userID, request.user.username)
+    user = getUserInfo(request.user.userID)
     context = {}
 
     if user:
-        context['characterName'] = user['charName']
+        context['characterName'] = user['characterName']
         context['experience'] = user['exp']
         context['gold'] = user['gold']
         context['top100'] = getTop100()
@@ -109,6 +109,9 @@ def joinGuild(request):
 
 @login_required
 def raidPage(request):
+    if request.GET.get('cancel') == '1':
+        deleteRaid(request.user.userID)
+
     raidStatus = getRaidStatus(request.user.userID)
     if raidStatus == 1:
         return redirect("game-raid-stage")
@@ -135,22 +138,32 @@ def raidPage(request):
 
 @login_required
 def raidStage(request):
-    # TODO allow user to delete raid on this page
     if request.method == "POST":
         level = request.POST.get("level", None)
-        partner1 = request.POST.get("partner1", None)
-        partner2 = request.POST.get("partner2", None)
-        context = {
-                "level": level,
-                "partners": [partner1, partner2],
-                "is_owner": True
-            }
-        if partner1 != "undefined":
-            sendRaidInvite(request.user.userID, partner1)
-        if partner2 != "undefined":
-            sendRaidInvite(request.user.userID, partner2)
+        pid1 = request.POST.get("partner1", None)
+        pid2 = request.POST.get("partner2", None)
 
-        uInfo = getUserInfo(request.user.userID, request.user.username)
+        partner1 = partner2 = None
+        if pid1 != "undefined":
+            partner1 = getUserInfo(pid1)
+        if pid2 != "undefined":
+            partner2 = getUserInfo(pid2)
+
+        p_name1 = p_name2 = None
+        if partner1:
+            sendRaidInvite(request.user.userID, pid1)
+            p_name1 = partner1['username']
+        if partner2:
+            sendRaidInvite(request.user.userID, pid2)
+            p_name2 = partner2['username']
+
+        context = {
+            "level": level,
+            "partners": [p_name1, p_name2],
+            "is_owner": True
+        }
+
+        uInfo = getUserInfo(request.user.userID)
         if createRaid(request.user.userID, level, uInfo["health"]):
             return render(request, 'game/raid-staging.html', context)
         else:
@@ -159,7 +172,8 @@ def raidStage(request):
 
     else:
         raid = getRaid(request.user.userID)
-        # TODO get other players, show status
+        # TODO get other players, show status and update
+        # status when user accepts
         context = {
             "level": raid['raidLevel'],
             "partners": [None, None],
@@ -168,37 +182,180 @@ def raidStage(request):
         return render(request, 'game/raid-staging.html', context)
 
 
+# 1 == won, 0 == lost, -1 othewise
+def hasWonOrLost(raid, monsters):
+    if raid['health1'] == 0 and raid['health2'] == 0 and raid['health3'] == 0:
+        return 0
+    for m in monsters:
+        if m['health'] != 0:
+            return -1
+    return 1
+
+
+def playerAttack(player, monsters):
+    if r.randint(0, 100) < 5:
+        return ()
+    for m in monsters:
+        if m['monsterID'] == player['move']:
+            var_attack = max(1, int(player['attack'] * .5))
+            var_attack *= r.randint(-1, 1)
+            player_attack_value = max(1, player['attack'] - m['defense']
+                                      + var_attack)
+            m['health'] = max(0, m['health'] - player_attack_value)
+            return (m['name'], player_attack_value)
+
+
+def monsterAttack(monster, players, raid):
+    if r.randint(0, 100) < 10:
+        return ()
+    p_len = len(players) - 1
+    if p_len != 0:
+        pid = r.randint(0, p_len)
+    else:
+        pid = 0
+    player_heatlth = players[pid]['raid_health']
+    var_attack = max(1, int(monster['attack'] * .5))
+    var_attack *= r.randint(-1, 1)
+    monster_attack_value = max(1, monster['attack'] - players[pid]['defense']
+                               + var_attack)
+    player_heatlth = max(0, player_heatlth - monster_attack_value)
+
+    player_id = players[pid]['userID']
+    if player_id == raid['user1']:
+        raid['health1'] = player_heatlth
+    if player_id == raid['user2']:
+        raid['health2'] = player_heatlth
+    if player_id == raid['user3']:
+        raid['health3'] = player_heatlth
+
+
 @login_required
 def raidPlay(request):
     # TODO error handling
+    # TODO allow player to leave raid, they lose gold
+
     raid = getRaid(request.user.userID)
     pk = raid['user1']
+
+    # first time check for starting raid
+    if raid['stageing'] == 1:
+        deleteInvites(request.user.userID)
+        raid['stageing'] = 0
+        updateRaid(raid)
+
+    # create monsters at start
     if noMonsters(pk):
         generateMonsters(pk, raid['raidLevel'])
+    monsters = getMonsters(pk)
+
+    # carry out attacks if everyone is ready
+    all_ready = True
+    userIDs = [raid['user1'], raid['user2'], raid['user3']]
+    userMoves = [raid['move1'], raid['move2'], raid['move3']]
+    for uid, um in zip(userIDs, userMoves):
+        if uid and um is None:
+            all_ready = False
+
+    userHealth = [raid['health1'], raid['health2'], raid['health3']]
+    event_log = []
+    if all_ready:
+        actors = []
+        players = []
+        for uid, move, health in zip(userIDs, userMoves, userHealth):
+            if uid and health != 0:
+                uInfo = getUserInfo(uid)
+                uInfo['move'] = move
+                uInfo['raid_health'] = health
+                actors.append(uInfo)
+                players.append(uInfo)
+
+        # sort monsters and players by speed
+        actors.extend(monsters)
+        sorted(actors, key=lambda k: k['speed'])
+
+        for actor in actors:
+            if 'userID' in actor.keys():
+                event = playerAttack(actor, monsters)
+                if event:
+                    event_log.append("{0} attacked {1} for {2} damage!"
+                                     .format(actor['characterName'],
+                                             event[0], event[1]))
+                else:
+                    event_log.append("{0} missed!"
+                                     .format(actor['characterName']))
+            elif actor['health']:
+                event = monsterAttack(actor, players, raid)
+                if event:
+                    event_log.append("{0} attacked {1} for {2} damage!"
+                                     .format(actor['name'],
+                                             event[0], event[1]))
+                else:
+                    event_log.append("{0} missed!"
+                                     .format(actor['name']))
+        updateMonsters(monsters)
+        updateRaid(raid)
+        raid['move1'] = None
+        raid['move2'] = None
+        raid['move3'] = None
+
+    # build UI components
     this_user = request.user.userID
     party = []
-    userIDs = [raid['user1'], raid['user2'], raid['user3']]
     userHealth = [raid['health1'], raid['health2'], raid['health3']]
     userMoves = [raid['move1'], raid['move2'], raid['move3']]
     no_move = False
+    this_health = 0
     for i, name, health, move in zip(userIDs, getPartyNames(userIDs),
                                      userHealth, userMoves):
         if this_user == i and move is None:
             no_move = True
+        if this_user == i:
+            this_health = health
         party.append({
             "name": name,
             "health": health,
             "no_move": move is None,
         })
-    context = {
-        "monsters": getMonsters(pk),
-        "party": party,
-        "no_move": no_move
-    }
 
+    # check for win/loss
+    wl = hasWonOrLost(raid, monsters)
+    has_won = 1 == wl
+    has_lost = 0 == wl
+
+    if has_won or has_lost:
+        user = getUserInfo(this_user)
+        if has_won:
+            user['exp'] += raid['raidLevel']
+            user['gold'] += math.floor(raid['raidLevel'] * 1.5)
+        elif has_lost:
+            user['exp'] += 1
+            user['gold'] = max(0, user['gold'] - raid['raidLevel'])
+        updateUserInfo(user)
+        deleteRaid(pk)
+
+    context = {
+        "monsters": monsters,
+        "party": party,
+        "no_move": no_move,
+        "health": this_health,
+        "pk": pk,
+        "events": event_log,
+        "has_won": has_won,
+        "has_lost": has_lost
+    }
     return render(request, 'game/raid-play.html', context)
 
 
 def raidAttack(request):
-    # TODO insert move into raid table
-    return None
+    pk = request.GET.get('pk')
+    raid = getRaid(pk)
+    uid = request.user.userID
+    mID = request.GET.get('mID')
+    if uid == raid['user1'] and raid['health1'] != 0:
+        raid['move1'] = mID
+    elif uid == raid['user2'] and raid['health2'] != 0:
+        raid['move2'] = mID
+    elif uid == raid['user3'] and raid['health3'] != 0:
+        raid['move3'] = mID
+    updateRaid(raid)
+    return redirect('game-raid-play')
