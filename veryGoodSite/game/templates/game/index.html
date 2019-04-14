@@ -33,10 +33,29 @@
                     Level: {{ userInfo.level }}
                   </div>
                   <div class="row">
-                    exp: {{ userInfo.exp }}
+                    Experience: {{ userInfo.exp }}
                   </div>
                   <div class="row">
                     Gold: {{ userInfo.gold }}
+                  </div>
+                  <div class="row">
+                    Health: {{ userInfo.health }}
+                    <a href="{% url 'game-index' %}?bID=1" class="btn-sm btn-primary btn-lg active" role="button" aria-pressed="true">Increase Health</a>
+                  </div>
+                  <div class="row">
+                    Attack: {{ userInfo.attack }}
+                    <a href="{% url 'game-index' %}?bID=2" class="btn-sm btn-primary btn-lg active" role="button" aria-pressed="true">Increase Attack</a>
+                  </div>
+                  <div class="row">
+                    Defense: {{ userInfo.defense }}
+                    <a href="{% url 'game-index' %}?bID=3" class="btn-sm btn-primary btn-lg active" role="button" aria-pressed="true">Increase Defense</a>
+                  </div>
+                  <div class="row">
+                    Speed: {{ userInfo.speed }}
+                    <a href="{% url 'game-index' %}?bID=4" class="btn-sm btn-primary btn-lg active" role="button" aria-pressed="true">Increase Speed</a>
+                  </div>
+                  <div class="row">
+                    Skill Points Available: {{ userInfo.skillPoints }}
                   </div>
                 </div>
               </div>
@@ -61,8 +80,7 @@
                     response["invites"].forEach(function(invite){
                       var div = document.createElement("DIV")
                       var sender = invite["senderUsername"]
-                      var secondsLeft = invite["timeLeft"]
-                      div.innerHTML = `${sender} has invited you on a raid! You have ${secondsLeft} second(s) to respond.`
+                      div.innerHTML = `${sender} has invited you on a raid. Join now!`
                       inviteDiv.appendChild(div)
                     })
                   }
@@ -82,7 +100,7 @@
               <h1 class="display-4">Welcome, Slayer!</h1>
               <p class="lead">Collect items. Level up. Slay monsters.</p>
               <hr class="my-4">
-              <p>Dungeon Buddies, Monster Slayers is a simple online RPG. Register today or sign in!</p>
+              <p>Dungeon Buddies is a simple online multiplayer RPG. Play solo or with your friends!</p>
               <a href="{% url 'register-index' %}" class="btn btn-primary btn-md" >Register</a>
               <a href="{% url 'register-login' %}" class="btn btn-primary btn-md">Sign In</a>
             </div>
