@@ -84,7 +84,7 @@ def createNewAccount(username, password, characterName):
     except Exception as e:
         success = -1
         if settings.DEBUG:
-            print(e)
+            print("createNewAccount", e)
     finally:
         c.close()
     return success
