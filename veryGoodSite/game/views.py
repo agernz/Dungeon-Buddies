@@ -137,16 +137,17 @@ def raidPage(request):
         deleteRaid(request.user.userID)
 
     raid = getRaid(request.user.userID)
-    if raid['stageing'] == 1:
+    if raid and raid['stageing'] == 1:
         return redirect("game-raid-stage")
-    elif raid['stageing'] == 0:
+    elif raid and raid['stageing'] == 0:
         return redirect("game-raid-render", rID=raid['user1'])
 
     levels = []
     for level in range(1, NUM_LEVELS + 1):
         levels.append({"description": "Reward: {0} gold and {1} exp. \
                        Lose {2} gold on failure."
-                       .format(5**(level-1), 3*(2**(level-1)), 2*(5**(level-1)))})
+                       .format(5**(level-1), 3*(2**(level-1)),
+                               2*(5**(level-1)))})
     context = {
         'members': '',
         'levels': levels

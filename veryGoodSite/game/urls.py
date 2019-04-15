@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
@@ -11,8 +11,8 @@ urlpatterns = [
     path('raid-stage/', views.raidStage, name='game-raid-stage'),
     path('raid-get-invites/', views.raidGetInvites,
          name='game-raid-get-invites'),
-    path(r'^raid-dungeon/(?P<rID>\d+)/$', views.raidRender,
-         name='game-raid-render'),
+    re_path(r'^raid-dungeon/(?P<rID>\d+)/$', views.raidRender,
+            name='game-raid-render'),
     path('raid-dungeon-attack/', views.raidAttack, name='game-raid-attack'),
     path('stats/', views.statsPage, name='game-stats'),
     path('raid-join/', views.joinRaid,

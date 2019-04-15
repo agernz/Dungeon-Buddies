@@ -29,12 +29,13 @@
       Speed: {{ m.speed }}
       <br>
       {% if no_move and health != 0 and m.health != 0 %}
-        <a id="attack-btn" class="btn btn-primary btn-sm" href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">Attack</a>
+        <a id="attack-btn" class="btn btn-primary btn-sm">Attack</a>
       {% endif %}
       </div>
       {% endfor %} 
     </div>
   </div>
+  <br>
   <h4>Party</h4>
   <div class="container">
     <div class="row">
@@ -44,12 +45,20 @@
           {{ member.name }}
         </div>
         Health: {{ member.health }}
+        <br>
+        {% if no_move and health != 0 %}
+        Status: selecting move 
+        {% elif not no_move and health != 0 %}
+        Status: Ready
+        {% elif health == 0 %}
+        Status: Dead
+        {% endif %}
       </div>
       {% endfor %}
     </div>
   </div>
 {% endif %}
-
+<br>
 <textarea id="event-log" cols="50" rows="10"></textarea><br/>
 <script>
     var raidSocket = new WebSocket('ws://' + window.location.host + 
@@ -58,7 +67,6 @@
     raidSocket.onmessage = function(e) {
       console.log('onMessage')
       var data = JSON.parse(e.data);
-      var pk = data['pk'];
       var events = data['events'];
       document.querySelector('#event-log').value += (events + '\n');
       console.log(pk, events);
@@ -70,13 +78,13 @@
 
 
     document.querySelector('#attack-btn').onclick = function(e) {
-      console.log('onClick')
-      var pk = {{ pk }};
-      var events = ["test", "attac"];
-      raidSocket.send(JSON.stringify({
-          'pk': pk,
-          'events': events
-      }));
+      if (events) {
+        console.log(events)
+        var events = ["test", "attac"];
+        raidSocket.send(JSON.stringify({
+            'events': events
+        }));
+      }
     };
 </script>
 {% endblock content %}
