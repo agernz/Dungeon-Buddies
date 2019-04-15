@@ -43,7 +43,7 @@
       </h4>
       {% endif %}
       {% if is_owner %}
-        <a class="btn btn-primary mr-2" href="" id="startRaidButton">Start Raid!</a>
+        <a class="btn btn-primary mr-2 text-white" id="startRaidButton">Start Raid!</a>
         <a class="btn btn-danger ml-2" href="{% url 'game-raid' %}?cancel=1">Cancel Raid</a>
       {% else %}
         <h4>
@@ -58,12 +58,6 @@
           raidStageSocket.onopen = function(e) {
             console.log('Connected')
           }
-          // raidStageSocket.onmessage = function(e) {
-          //   console.log('onMessage')
-          //   var data = JSON.parse(e.data);
-          //   var playerReadyID = data['playerID'];
-          //   console.log(playerReadyID);
-          // };
 
           raidStageSocket.onmessage = function(e) {
             // if (e)
@@ -82,8 +76,6 @@
               window.location.href = "{% url 'game-raid-render' pk %}"
             };
 
-            // document.querySelector('#event-log').value += (events + '\n');
-            // console.log(playerReady);
           };
 
           raidStageSocket.onclose = function(e) {
