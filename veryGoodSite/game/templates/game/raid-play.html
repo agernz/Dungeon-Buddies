@@ -41,24 +41,22 @@
   {% endfor %} 
 {% endif %}
 
-<ul class="list-group">
-{% for event in events %} 
-  {{ event }}
-{% endfor %} 
-</ul>
+<textarea id="event-log" cols="50" rows="10"></textarea><br/>
 <script>
-    var raidSocket = new WebSocket('ws://' + window.location.host + '/ws/raid/');
+    var raidSocket = new WebSocket('ws://' + window.location.host + 
+      '/ws/raid/' + {{ pk }} + '/');
 
     raidSocket.onmessage = function(e) {
       console.log('onMessage')
       var data = JSON.parse(e.data);
       var pk = data['pk'];
       var events = data['events'];
-      console.log(pk, events)
+      document.querySelector('#event-log').value += (events + '\n');
+      console.log(pk, events);
     };
 
     raidSocket.onclose = function(e) {
-      console.error(e);
+      console.error('socket closed');
     };
 
 
