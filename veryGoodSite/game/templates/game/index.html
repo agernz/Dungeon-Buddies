@@ -120,12 +120,12 @@
                             var newRow = document.createElement("UL")
                             var senderUsername = invite["senderUsername"]
                             var senderID = invite["senderID"]
-                            newRow.className = "list-group-item ml-2 mr-2 raid-invite"
-                            newRow.innerHTML = `${senderUsername} has invited you to a raid.`
+                            newRow.className = "list-group-item ml-2 mr-2 raid-invite align-middle"
+                            newRow.innerHTML = `<div class="spinner-grow text-primary align-middle" role="status"></div> ${senderUsername} has invited you to a raid.`
                             inviteDiv.appendChild(newRow)
 
                             var joinBtn = document.createElement("button")
-                            joinBtn.className = "join-raid-btn btn btn-primary mt-2 ml-4"
+                            joinBtn.className = "join-raid-btn btn btn-primary ml-4 align-middle"
                             joinBtn.innerHTML = "Join Raid"
                             joinBtn.id = `${senderID}`
                             newRow.appendChild(joinBtn)
