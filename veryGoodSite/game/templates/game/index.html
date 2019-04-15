@@ -18,13 +18,9 @@
         <div class="row">
           <div class="col ml-0 mr-4 bg-light rounded">
             <div class="container mt-2 mb-2">
-              <div class="row">
+              <div class="row mb-4">
                 <div class="col-4">
-<<<<<<< HEAD
-                  <img src="{% static "game/archer.png" %}" alt="profile picture" class="img-thumbnail">
-=======
-                  <img src="{% static 'game/profilepic.png' %}" alt="profile picture" class="img-thumbnail">
->>>>>>> 2622aa0eea7a1eb41c71eb8d9134362d4d6dd1aa
+                  <img src="{% static 'game/archer.png' %}" alt="profile picture" class="img-thumbnail">
                 </div>
                 <div class="col-8">
                   <div class="row">
@@ -37,30 +33,30 @@
               </div>
               <div class="row">
                 <div class = "col-6 mb-2">
-                  <img src="{% static "game/level.png" %}" alt="level_pic" class="img-fluid">
+                  <img src="{% static 'game/level.png' %}" alt="level_pic" class="img-fluid">
                   Level: {{userInfo.level }}
                 </div>
                 <div class="col-6" id="exp">
-                  <img src="{% static "game/resized/exp.png" %}" alt="exp-pic" class="img-fluid"> Exp: {{ userInfo.exp }}/1
+                  <img src="{% static 'game/resized/exp.png' %}" alt="exp-pic" class="img-fluid"> Exp: {{ userInfo.exp }}/1
                 </div>
               </div>
               <div class = "row mb-2">
                 <div class="col-6 mt-2">
-                  <img src="{% static "game/resized/gold.png" %}" alt="gold-pic" class="img-fluid">
+                  <img src="{% static 'game/resized/gold.png' %}" alt="gold-pic" class="img-fluid">
                   Gold: {{ userInfo.gold }}
                 </div>
                 <div class="col-6">
-                  <img src="{% static "game/key.png" %}" alt="skill_pic" class="img-fluid">
+                  <img src="{% static 'game/key.png' %}" alt="skill_pic" class="img-fluid">
                   Skills: {{ userInfo.skillPoints }}
                 </div>
               </div>
               <div class = "row mb-2">
                 <div class="col-6">
-                  <img src="{% static "game/sameHeight/beer.png" %}" alt="health-pic" class="img-fluid">
+                  <img src="{% static 'game/sameHeight/beer.png' %}" alt="health-pic" class="img-fluid">
                   Health: {{ userInfo.health }}
                 </div>
                 <div class="col-6">
-                  <img src="{% static "game/sameHeight/sword.png" %}" alt="attack-pic" class="img-fluid">
+                  <img src="{% static 'game/sameHeight/sword.png' %}" alt="attack-pic" class="img-fluid">
                   Attack: {{ userInfo.attack }}
                 </div>
               </div>
@@ -74,11 +70,11 @@
               </div>
               <div class = "row mb-2">
                 <div class="col-6 mt-1">
-                  <img src="{% static "game/resized/shield.png" %}" alt="shield-pic" class="img-fluid">
+                  <img src="{% static 'game/resized/shield.png' %}" alt="shield-pic" class="img-fluid">
                   Defense: {{ userInfo.defense }}
                 </div>
                 <div class="col-6">
-                  <img src="{% static "game/sameHeight/boot.png" %}" alt="speed-pic" class="img-fluid">
+                  <img src="{% static 'game/sameHeight/boot.png' %}" alt="speed-pic" class="img-fluid">
                   Speed: {{ userInfo.speed }}
                 </div>
               </div>
@@ -123,8 +119,8 @@
           </div>
         </div>
         <div class="row mt-2">
-          <div class = "col">
-            <img src="{% static "game/rsz_corn.png" %}" alt="level_pic" class="img-fluid">
+          <div class = "col text-center">
+            <img src="{% static 'game/rsz_corn.png' %}" alt="level_pic" class="img-fluid">
             Made with love and corn for Abdu's CS411 Spring 2019
           </div>
         </div>
