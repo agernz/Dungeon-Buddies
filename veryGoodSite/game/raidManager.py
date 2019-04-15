@@ -18,28 +18,27 @@ class RaidManager(WebsocketConsumer):
     def receive(self, text_data):
         data = json.loads(text_data)
         events = data['events']
-
+        print('recieve')
         async_to_sync(self.channel_layer.group_send)(
             self.raid_name,
             {
-                'type': 'raid_upates',
+                'type': 'raidData',
                 'events': events
             }
         )
 
-    def raidData(self, event):
-        events = event['events']
-
+    def raidData(self, data):
+        print('raidData')
+        events = data['events']
         self.send(text_data=json.dumps({
             'events': events
         }))
 
+
 class RaidStageManager(WebsocketConsumer):
     def connect(self):
         self.raid_name = self.scope['url_route']['kwargs']['rID']
-        # print("name: ", self.raid_name)
         self.raid_name = 'raid-stage-%s' % self.raid_name
-        # print("name: ", self.raid_name)
         async_to_sync(self.channel_layer.group_add)(
             self.raid_name,
             self.channel_name
