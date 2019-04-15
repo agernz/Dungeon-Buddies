@@ -8,6 +8,7 @@ urlpatterns = [
     path('guild-invite/', views.guildInvite, name='game-guild-invite'),
     path('guild-join/', views.joinGuild, name='game-guild-join'),
     path('raid/', views.raidPage, name='game-raid'),
+    # re_path(r'^raid/(?P<gID>\d+)/$', views.raidPage, name='game-raid'),
     # path('raid-stage/', views.raidStage, name='game-raid-stage'),
     re_path(r'^raid-stage/(?P<rID>\d+)/$', views.raidStage, name='game-raid-stage'),
     path('raid-get-invites/', views.raidGetInvites,

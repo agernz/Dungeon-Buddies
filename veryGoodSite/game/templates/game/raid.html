@@ -103,6 +103,10 @@
             p.elements["partner1"].value = partners[0]
             p.elements["partner2"].value = partners[1]
             document.getElementById("raid_form_paramters").submit()
+
+            raidInviteSocket.send(JSON.stringify({
+                'invite': "True",
+            }));
           }
         });
       </script>
@@ -190,7 +194,7 @@
                     <div class="col">
                       Invite players from your guild to help you fight monsters.
                     </div>
-                    <div class="col-3 mr-4 mt-1">
+                    <div class="col-4 mr-4 mt-1">
                       <a class="btn btn-primary" href="{% url 'game-guild' %}">Go to Guild</a>
                     </div>
                   </div>
@@ -213,6 +217,28 @@
             <ul class="list-group mt-4 mb-4" id="inviteUL">
             </ul>
             <script type="text/javascript">
+              var raidInviteSocket;
+              if ("{{ guildID }}" != "") {
+                raidInviteSocket = new WebSocket('ws://' + window.location.host +
+                '/ws/raid-invite/' + {{ guildID }} + '/');
+                raidInviteSocket.onopen = function(e) {
+                  console.log('Connected')
+                }
+
+                raidInviteSocket.onmessage = function(e) {
+                  var data = JSON.parse(e.data);
+                  var invite = data['invite'];
+                  if (invite == "True") {
+                    getInvites()
+                  }
+                };
+
+                raidInviteSocket.onclose = function(e) {
+                  console.error('socket closed');
+                };
+              };
+
+
               function getInvites(){
                 $.ajax({
                   type: "GET",
@@ -251,8 +277,8 @@
                 window.location.href = `{% url 'game-raid-join' %}?id=${this.id}`
               });
 
-              window.onload = getInvites;
-              window.setInterval(function(){ getInvites(); }, 50000)
+              window.onload = getInvites();
+              // window.setInterval(function(){ getInvites(); }, 50000)
             </script>
           </div>
         </div>
