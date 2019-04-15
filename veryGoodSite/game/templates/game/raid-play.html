@@ -18,7 +18,7 @@
       {% for m in monsters %}
       <div class="col-sm">
         <div style="font-weight: bold">
-          {{ m.name }} 
+          {{ m.name }}
         </div>
       Health: {{ m.health }}
       <br>
@@ -32,7 +32,7 @@
         <a id="attack-btn" class="btn btn-primary btn-sm">Attack</a>
       {% endif %}
       </div>
-      {% endfor %} 
+      {% endfor %}
     </div>
   </div>
   <br>
@@ -47,7 +47,7 @@
         Health: {{ member.health }}
         <br>
         {% if no_move and health != 0 %}
-        Status: selecting move 
+        Status: selecting move
         {% elif not no_move and health != 0 %}
         Status: Ready
         {% elif health == 0 %}
@@ -61,7 +61,7 @@
 <br>
 <textarea id="event-log" cols="50" rows="10"></textarea><br/>
 <script>
-    var raidSocket = new WebSocket('ws://' + window.location.host + 
+    var raidSocket = new WebSocket('ws://' + window.location.host +
       '/ws/raid/' + {{ pk }} + '/');
 
     raidSocket.onmessage = function(e) {

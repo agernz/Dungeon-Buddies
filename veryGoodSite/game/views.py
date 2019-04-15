@@ -138,8 +138,10 @@ def raidPage(request):
 
     raid = getRaid(request.user.userID)
     if raid and raid['stageing'] == 1:
-        return redirect("game-raid-stage")
+        print('Redirect to game-raid-stage')
+        return redirect("game-raid-stage", rID=raid['user1'])
     elif raid and raid['stageing'] == 0:
+        print('Redirect to game-raid-render')
         return redirect("game-raid-render", rID=raid['user1'])
 
     levels = []
@@ -156,12 +158,11 @@ def raidPage(request):
     if guildID:
         guildMembers = getGuildMembers(request.user.userID, guildID[0], False)
         context['members'] = guildMembers
-
     return render(request, 'game/raid.html', context)
 
 
 @login_required
-def raidStage(request):
+def raidStage(request, rID):
     # TODO allow members to join raid
     if request.method == "POST":
         level = request.POST.get("level", None)
@@ -182,14 +183,15 @@ def raidStage(request):
             sendRaidInvite(request.user.userID, pid2)
             p_name2 = partner2['username']
 
+        uInfo = getUserInfo(request.user.userID)
         context = {
             "level": level,
             "partners": [p_name1, p_name2],
+            "partnerUserIDs": [pid1, pid2],
+            "raidOwner" : uInfo["username"],
             "is_owner": True,
             "pk": request.user.userID
         }
-
-        uInfo = getUserInfo(request.user.userID)
         if createRaid(request.user.userID, level, uInfo["health"]):
             return render(request, 'game/raid-staging.html', context)
         else:
@@ -197,12 +199,30 @@ def raidStage(request):
             return redirect('game-raid')
 
     else:
-        raid = getRaid(request.user.userID)
+        raid = getRaid(rID)
+        if not raid:
+            return redirect('game-raid')
         # TODO get other players, show status and update
         # status when user accepts
+        ownerInfo = getUserInfo(raid["user1"])
+
+        pid1 = pid2 = p1username = p2username = None
+        print(raid["user2"], request.user.userID)
+        print(raid["user3"], request.user.userID)
+        if raid["user2"] and raid["user2"] != request.user.userID:
+            p1 = getUserInfo(raid["user2"])
+            p1username = p1["username"]
+            pid1 = p1["userID"]
+        if raid["user3"] and raid["user3"] != request.user.userID:
+            p2 = getUserInfo(raid["user3"])
+            p2username = p2["username"]
+            pid2 = p2["userID"]
+
         context = {
             "level": raid['raidLevel'],
-            "partners": [None, None],
+            "partners": [p1username, p2username],
+            "partnerUserIDs": [pid1, pid2],
+            "raidOwner" : ownerInfo["username"],
             "is_owner": request.user.userID == raid['user1'],
             "pk": raid['user1']
         }
@@ -213,8 +233,8 @@ def raidStage(request):
 @login_required
 def joinRaid(request):
     id = request.user.userID
-    raidUserID = request.GET.get('id')
-    raid = getRaid(raidUserID)
+    raid_owner = request.GET.get('id')
+    raid = getRaid(raid_owner)
     userInfo = getUserInfo(id)
     if raid['user2'] == id or raid['user3'] == id:
         print("joinRaid: Player {} already accepted".format(id))
@@ -225,12 +245,11 @@ def joinRaid(request):
         raid['user3'] = id
         raid['health3'] = userInfo['health']
     updateRaid(raid)
-    return raidStage(request)
-
+    return redirect("game-raid-stage", rID=raid_owner)
 
 @login_required
 def raidRender(request, rID):
-    raid = getRaid(request.user.userID)
+    raid = getRaid(rID)
     if not raid:
         return redirect('game-raid')
     pk = raid['user1']
@@ -241,7 +260,7 @@ def raidRender(request, rID):
         raid['stageing'] = 0
         updateRaid(raid)
     elif raid['stageing'] == 1:
-        redirect('game-raid-stage')
+        redirect('game-raid-stage', rID=pk)
 
     # create monsters at start
     if noMonsters(pk):

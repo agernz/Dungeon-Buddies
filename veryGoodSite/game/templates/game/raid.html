@@ -74,7 +74,7 @@
           </div>
         </div>
       </div>
-      <form id="raid_form_paramters" action="{% url 'game-raid-stage' %}" method="POST">
+      <form id="raid_form_paramters" action="{% url 'game-raid-stage' rID=user.userID %}" method="POST">
           {% csrf_token %}
           <input type="hidden" name="level" value=""/>
           <input type="hidden" name="partner1" value=""/>
@@ -238,7 +238,7 @@
                         inviteDiv.appendChild(newRow)
 
                         var joinBtn = document.createElement("button")
-                        joinBtn.className = "join-raid-btn btn btn-primary mt-2"
+                        joinBtn.className = "join-raid-btn btn btn-primary mt-2 ml-4"
                         joinBtn.innerHTML = "Join Raid"
                         joinBtn.id = `${senderID}`
                         newRow.appendChild(joinBtn)
@@ -250,7 +250,7 @@
               $(document).on('click', '.join-raid-btn', function() {
                 window.location.href = `{% url 'game-raid-join' %}?id=${this.id}`
               });
-              
+
               window.onload = getInvites;
               window.setInterval(function(){ getInvites(); }, 50000)
             </script>
