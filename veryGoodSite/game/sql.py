@@ -37,7 +37,7 @@ def updateUserInfo(user):
         new_data.append(user['userID'])
         c.execute("UPDATE Account SET username=%s, characterName=%s, experience=%s, \
                       gold=%s, guildID=%s, level=%s, health=%s, attack=%s, \
-                      defense=%s, speed=%s, skillPoints=%s WHERE userID=%s;", new_data)
+                      defense=%s, speed=%s, skillPoints=%s, WHERE userID=%s;", new_data)
     except Exception as e:
         if settings.DEBUG:
             print("updateUserInfo:", e)
