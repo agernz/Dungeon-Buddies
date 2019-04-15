@@ -5,7 +5,6 @@ from game.forms.GuildForm import GuildForm
 from game.forms.InviteForm import InviteForm
 from django.http import JsonResponse
 from django.utils import safestring
-import math
 import random as r
 from game.sql import (
     getUserInfo, leaveGuild, getGuildInvites, getGuildMembers, getGuildRank,
@@ -304,7 +303,8 @@ def endRaid(actors, raid, has_won):
                 user['gold'] += 5**(raid['raidLevel'] - 1)
             else:
                 user['exp'] += 1
-                user['gold'] = max(0, user['gold'] - 2*(5**(raid['raidLevel'] - 1)))
+                user['gold'] = max(0, user['gold'] -
+                                   2*(5**(raid['raidLevel'] - 1)))
             updateUserInfo(user)
 
 
@@ -407,21 +407,33 @@ def raidPlay(request):
             if is_player and actor['raid_health']:
                 event = playerAttack(actor, monsters)
                 if event:
-                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-success'>{0} attacked {1} for {2} damage!</li>"
-                                     .format(actor['characterName'],
-                                             event[0], event[1])))
+                    event_log.append(
+                        safestring.mark_safe("<li class='list-group-item \
+                                             list-group-item-success'>{0} \
+                                             attacked {1} for {2} damage!</li>"
+                                             .format(actor['characterName'],
+                                                     event[0], event[1])))
                 else:
-                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-secondary'>{0} missed!</li>"
-                                     .format(actor['characterName'])))
+                    event_log.append(
+                        safestring.mark_safe("<li class='list-group-item \
+                                             list-group-item-secondary'>{0} \
+                                             missed!</li>".format(
+                                                 actor['characterName'])))
             elif not is_player and actor['health']:
                 event = monsterAttack(actor, players, raid)
                 if event:
-                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-danger'>{0} attacked {1} for {2} damage!</li>"
-                                     .format(actor['name'],
-                                             event[0], event[1])))
+                    event_log.append(
+                        safestring.mark_safe("<li class='list-group-item \
+                                             list-group-item-danger'>{0} \
+                                             attacked {1} for {2} damage!</li>"
+                                             .format(actor['name'],
+                                                     event[0], event[1])))
                 else:
-                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-secondary'>{} missed!</li>"
-                                     .format(actor['name'])))
+                    event_log.append(
+                        safestring.mark_safe("<li class='list-group-item \
+                                             list-group-item-secondary'>{} \
+                                             missed!</li>"
+                                             .format(actor['name'])))
         updateMonsters(monsters)
         raid['move1'] = None
         raid['move2'] = None
@@ -469,7 +481,11 @@ def raidPlay(request):
     return render(request, 'game/raid-play.html', context)
 
 
-def raidAttack(request):
+def raidUpdate(request):
+    pk = request.GET.get('pk')
+    raid = getRaid(pk)
+    raid['monsters'] = getMonsters(raid['user1'])
+    return JsonResponse(raid)
     pk = request.GET.get('pk')
     raid = getRaid(pk)
     if not raid:
