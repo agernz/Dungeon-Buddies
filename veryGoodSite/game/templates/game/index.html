@@ -53,6 +53,14 @@
                   Skill Points Available: {{ userInfo.skillPoints }}
                 </div>
               </div>
+              <br>
+              <div class = "row mb-2">
+                <div class="col-6">
+                  <div style="font-weight: bold">
+                    Stats
+                  </div>
+                </div>
+              </div>
               <div class = "row mb-2">
                 <div class="col-6" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Spend skill points to increase your player stats.">
                   <img src="{% static 'game/sameHeight/beer.png' %}" alt="health-pic" class="img-fluid">
@@ -63,6 +71,7 @@
                   Attack: {{ userInfo.attack }}
                 </div>
               </div>
+              {% if userInfo.skillPoints %}
               <div class="row mb-2">
                 <div class="col-6">
                   <a href="{% url 'game-index' %}?bID=1" class="btn-sm btn-info btn-lg" role="button" aria-pressed="true">Add Health</a>
@@ -71,6 +80,7 @@
                   <a href="{% url 'game-index' %}?bID=2" class="btn-sm btn-info btn-lg" role="button" aria-pressed="true">Add Attack</a>
                 </div>
               </div>
+              {% endif %}
               <div class = "row mb-2">
                 <div class="col-6 mt-1" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Spend skill points to increase your player stats.">
                   <img src="{% static 'game/resized/shield.png' %}" alt="shield-pic" class="img-fluid">
@@ -81,6 +91,7 @@
                   Speed: {{ userInfo.speed }}
                 </div>
               </div>
+              {% if userInfo.skillPoints %}
               <div class="row mb-2">
                 <div class="col-6">
                   <a href="{% url 'game-index' %}?bID=3" class="btn-sm btn-info btn-lg" role="button" aria-pressed="true">Add Defense</a>
@@ -89,6 +100,7 @@
                   <a href="{% url 'game-index' %}?bID=4" class="btn-sm btn-info btn-lg" role="button" aria-pressed="true">Add Speed</a>
                 </div>
               </div>
+              {% endif %}
             </div>
           </div>
           <div class="col ml-0 mr-0 bg-light rounded">
@@ -168,12 +180,7 @@
             </script> -->
           </div>
         </div>
-        <div class="row mt-2">
-          <div class = "col text-center">
-            <img src="{% static 'game/rsz_corn.png' %}" alt="level_pic" class="img-fluid">
-            Made with love and corn for Abdu's CS411 Spring 2019
-          </div>
-        </div>
+        <br>
       </div>
       <script type="text/javascript">
         function getExp() {
@@ -214,5 +221,11 @@
         </div>
       </div>
     {% endif %}
+  </div>
+  <div class="fixed-bottom" style="padding-bottom: 50px;">
+    <div class="text-center">
+      <img src="{% static 'game/rsz_corn.png' %}" alt="level_pic" class="img-fluid">
+      Made with love and corn for Abdu's CS411 Spring 2019
+    </div>
   </div>
 {% endblock content %}

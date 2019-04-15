@@ -137,10 +137,8 @@ def raidPage(request):
 
     raid = getRaid(request.user.userID)
     if raid and raid['stageing'] == 1:
-        print('Redirect to game-raid-stage')
         return redirect("game-raid-stage", rID=raid['user1'])
     elif raid and raid['stageing'] == 0:
-        print('Redirect to game-raid-render')
         return redirect("game-raid-render", rID=raid['user1'])
 
     levels = []
@@ -187,7 +185,7 @@ def raidStage(request, rID):
             "level": level,
             "partners": [p_name1, p_name2],
             "partnerUserIDs": [pid1, pid2],
-            "raidOwner" : uInfo["username"],
+            "raidOwner": uInfo["username"],
             "is_owner": True,
             "pk": request.user.userID
         }
@@ -206,8 +204,6 @@ def raidStage(request, rID):
         ownerInfo = getUserInfo(raid["user1"])
 
         pid1 = pid2 = p1username = p2username = None
-        print(raid["user2"], request.user.userID)
-        print(raid["user3"], request.user.userID)
         if raid["user2"] and raid["user2"] != request.user.userID:
             p1 = getUserInfo(raid["user2"])
             p1username = p1["username"]
@@ -221,7 +217,7 @@ def raidStage(request, rID):
             "level": raid['raidLevel'],
             "partners": [p1username, p2username],
             "partnerUserIDs": [pid1, pid2],
-            "raidOwner" : ownerInfo["username"],
+            "raidOwner": ownerInfo["username"],
             "is_owner": request.user.userID == raid['user1'],
             "pk": raid['user1']
         }
@@ -236,7 +232,7 @@ def joinRaid(request):
     raid = getRaid(raid_owner)
     userInfo = getUserInfo(id)
     if raid['user2'] == id or raid['user3'] == id:
-        print("joinRaid: Player {} already accepted".format(id))
+        messages.info(request, "You have already joined")
     elif not raid['user2']:
         raid['user2'] = id
         raid['health2'] = userInfo['health']
@@ -245,6 +241,7 @@ def joinRaid(request):
         raid['health3'] = userInfo['health']
     updateRaid(raid)
     return redirect("game-raid-stage", rID=raid_owner)
+
 
 @login_required
 def raidRender(request, rID):
@@ -523,7 +520,6 @@ def raidUpdate(request):
 
 def updateSkills(request):
     user = getUserInfo(request.user.userID)
-    print(user)
     bID = request.GET.get('bID')
     if user['skillPoints'] > 0:
         if bID == 1:
@@ -539,5 +535,4 @@ def updateSkills(request):
             user['speed'] += 1
             user['skillPoints'] -= 1
         updateUserInfo(user)
-        print(user)
     return render(request, 'game/index.html', {"userInfo": user['userID']})
