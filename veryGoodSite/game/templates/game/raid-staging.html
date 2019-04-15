@@ -54,8 +54,7 @@
       {% endif %}
       <script>
           var raidStageSocket = new WebSocket('ws://' + window.location.host +
-            '/ws/raid-stage/' + {{ pk }} + '/');
-
+          '/ws/raid-stage/' + {{ pk }} + '/');
           raidStageSocket.onopen = function(e) {
             console.log('Connected')
           }
