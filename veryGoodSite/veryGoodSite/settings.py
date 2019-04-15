@@ -27,6 +27,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['0.0.0.0', '192.168.99.100', '127.0.0.1']
 ASGI_APPLICATION = 'veryGoodSite.routing.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+        },
+    },
+}
 
 # Application definition
 
