@@ -5,18 +5,18 @@ from game.forms.GuildForm import GuildForm
 from game.forms.InviteForm import InviteForm
 from django.http import JsonResponse
 from django.utils import safestring
-import math
 import random as r
 from game.sql import (
     getUserInfo, leaveGuild, getGuildInvites, getGuildMembers, getGuildRank,
     getTop100, getUserRank, getUserGuild, getTop100Guilds, createNewGuild,
     sendGuildInvite, joinGuildMember, sendRaidInvite, getRaidInvites,
-    createRaid, getRaidStatus, getRaid, getMonsters, getPartyNames,
+    createRaid, getRaid, getMonsters, getPartyNames,
     generateMonsters, noMonsters, updateRaid, deleteRaid, deleteInvites,
     updateMonsters, updateUserInfo
 )
 
-
+# TODO leave
+# TODO stageing when no raid error
 NUM_LEVELS = 5
 
 
@@ -135,18 +135,20 @@ def raidPage(request):
         deleteInvites(request.user.userID)
         deleteRaid(request.user.userID)
 
-    raidStatus = getRaidStatus(request.user.userID)
-    if raidStatus == 1:
-        return redirect("game-raid-stage")
-    elif raidStatus == 0:
-        return redirect("game-raid-play")
+    raid = getRaid(request.user.userID)
+    if raid and raid['stageing'] == 1:
+        print('Redirect to game-raid-stage')
+        return redirect("game-raid-stage", rID=raid['user1'])
+    elif raid and raid['stageing'] == 0:
+        print('Redirect to game-raid-render')
+        return redirect("game-raid-render", rID=raid['user1'])
 
     levels = []
-    for l in range(1, NUM_LEVELS + 1):
-        levels.append({"description": "You may recieve {0} gold and {1} exp \
-                       or lose {2} gold"
-                       .format(math.floor(l * 1.5), l, math.ceil(l * 1.5))})
-
+    for level in range(1, NUM_LEVELS + 1):
+        levels.append({"description": "Reward: {0} gold and {1} exp. \
+                       Lose {2} gold on failure."
+                       .format(5**(level-1), 3*(2**(level-1)),
+                               2*(5**(level-1)))})
     context = {
         'members': '',
         'levels': levels
@@ -155,12 +157,11 @@ def raidPage(request):
     if guildID:
         guildMembers = getGuildMembers(request.user.userID, guildID[0], False)
         context['members'] = guildMembers
-
     return render(request, 'game/raid.html', context)
 
 
 @login_required
-def raidStage(request):
+def raidStage(request, rID):
     # TODO allow members to join raid
     if request.method == "POST":
         level = request.POST.get("level", None)
@@ -181,13 +182,15 @@ def raidStage(request):
             sendRaidInvite(request.user.userID, pid2)
             p_name2 = partner2['username']
 
+        uInfo = getUserInfo(request.user.userID)
         context = {
             "level": level,
             "partners": [p_name1, p_name2],
-            "is_owner": True
+            "partnerUserIDs": [pid1, pid2],
+            "raidOwner" : uInfo["username"],
+            "is_owner": True,
+            "pk": request.user.userID
         }
-
-        uInfo = getUserInfo(request.user.userID)
         if createRaid(request.user.userID, level, uInfo["health"]):
             return render(request, 'game/raid-staging.html', context)
         else:
@@ -195,22 +198,105 @@ def raidStage(request):
             return redirect('game-raid')
 
     else:
-        raid = getRaid(request.user.userID)
+        raid = getRaid(rID)
+        if not raid:
+            return redirect('game-raid')
         # TODO get other players, show status and update
         # status when user accepts
+        ownerInfo = getUserInfo(raid["user1"])
+
+        pid1 = pid2 = p1username = p2username = None
+        print(raid["user2"], request.user.userID)
+        print(raid["user3"], request.user.userID)
+        if raid["user2"] and raid["user2"] != request.user.userID:
+            p1 = getUserInfo(raid["user2"])
+            p1username = p1["username"]
+            pid1 = p1["userID"]
+        if raid["user3"] and raid["user3"] != request.user.userID:
+            p2 = getUserInfo(raid["user3"])
+            p2username = p2["username"]
+            pid2 = p2["userID"]
+
         context = {
             "level": raid['raidLevel'],
-            "partners": [None, None],
-            "is_owner": request.user.userID == raid['user1']
+            "partners": [p1username, p2username],
+            "partnerUserIDs": [pid1, pid2],
+            "raidOwner" : ownerInfo["username"],
+            "is_owner": request.user.userID == raid['user1'],
+            "pk": raid['user1']
         }
+
         return render(request, 'game/raid-staging.html', context)
+
 
 @login_required
 def joinRaid(request):
-    id = request.GET.get('id')
-    
-    print(id)
-    return redirect('game-raid-play')
+    id = request.user.userID
+    raid_owner = request.GET.get('id')
+    raid = getRaid(raid_owner)
+    userInfo = getUserInfo(id)
+    if raid['user2'] == id or raid['user3'] == id:
+        print("joinRaid: Player {} already accepted".format(id))
+    elif not raid['user2']:
+        raid['user2'] = id
+        raid['health2'] = userInfo['health']
+    else:
+        raid['user3'] = id
+        raid['health3'] = userInfo['health']
+    updateRaid(raid)
+    return redirect("game-raid-stage", rID=raid_owner)
+
+@login_required
+def raidRender(request, rID):
+    raid = getRaid(rID)
+    if not raid:
+        return redirect('game-raid')
+    pk = raid['user1']
+
+    # first time check for starting raid
+    if raid['stageing'] == 1 and request.user.userID == pk:
+        deleteInvites(request.user.userID)
+        raid['stageing'] = 0
+        updateRaid(raid)
+    elif raid['stageing'] == 1:
+        redirect('game-raid-stage', rID=pk)
+
+    # create monsters at start
+    if noMonsters(pk):
+        generateMonsters(pk, raid['raidLevel'])
+    monsters = getMonsters(pk)
+
+    # build UI components
+    this_user = request.user.userID
+    party = []
+    userIDs = [raid['user1'], raid['user2'], raid['user3']]
+    userHealth = [raid['health1'], raid['health2'], raid['health3']]
+    userMoves = [raid['move1'], raid['move2'], raid['move3']]
+    no_move = False
+    this_health = 0
+    for i, name, health, move in zip(userIDs, getPartyNames(userIDs),
+                                     userHealth, userMoves):
+        if this_user == i and move is None:
+            no_move = True
+        if this_user == i:
+            this_health = health
+        party.append({
+            "name": name,
+            "health": health,
+            "no_move": move is None,
+        })
+
+    context = {
+        "monsters": monsters,
+        "party": party,
+        "no_move": no_move,
+        "health": this_health,
+        "pk": pk,
+        "events": [],
+        "has_won": False,
+        "has_lost": False,
+    }
+    return render(request, 'game/raid-play.html', context)
 
 
 # 1 == won, 0 == lost, -1 othewise
@@ -232,11 +318,12 @@ def endRaid(actors, raid, has_won):
             if 'raid_health' in keys:
                 del user['raid_health']
             if has_won:
-                user['exp'] += raid['raidLevel']
-                user['gold'] += math.floor(raid['raidLevel'] * 1.5)
+                user['exp'] += (2**(raid['raidLevel'] - 1)) * 3
+                user['gold'] += 5**(raid['raidLevel'] - 1)
             else:
                 user['exp'] += 1
-                user['gold'] = max(0, user['gold'] - raid['raidLevel'])
+                user['gold'] = max(0, user['gold'] -
+                                   2*(5**(raid['raidLevel'] - 1)))
             updateUserInfo(user)
 
 
@@ -254,9 +341,9 @@ def playerAttack(player, monsters):
 
 
 def monsterAttack(monster, players, raid):
-    if r.randint(0, 100) < 10:
-        return ()
     p_len = len(players) - 1
+    if p_len < 0 or r.randint(0, 100) < 10:
+        return ()
     if p_len != 0:
         pid = r.randint(0, p_len)
     else:
@@ -287,21 +374,10 @@ def monsterAttack(monster, players, raid):
 def raidPlay(request):
     # TODO error handling
     # TODO allow player to leave raid, they lose gold
-
     raid = getRaid(request.user.userID)
     if not raid:
         return redirect('game-raid')
     pk = raid['user1']
-
-    # first time check for starting raid
-    if raid['stageing'] == 1:
-        deleteInvites(request.user.userID)
-        raid['stageing'] = 0
-        updateRaid(raid)
-
-    # create monsters at start
-    if noMonsters(pk):
-        generateMonsters(pk, raid['raidLevel'])
     monsters = getMonsters(pk)
 
     # check for win/loss
@@ -350,21 +426,33 @@ def raidPlay(request):
             if is_player and actor['raid_health']:
                 event = playerAttack(actor, monsters)
                 if event:
-                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-success'>{0} attacked {1} for {2} damage!</li>"
-                                     .format(actor['characterName'],
-                                             event[0], event[1])))
+                    event_log.append(
+                        safestring.mark_safe("<li class='list-group-item \
+                                             list-group-item-success'>{0} \
+                                             attacked {1} for {2} damage!</li>"
+                                             .format(actor['characterName'],
+                                                     event[0], event[1])))
                 else:
-                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-secondary'>{0} missed!</li>"
-                                     .format(actor['characterName'])))
+                    event_log.append(
+                        safestring.mark_safe("<li class='list-group-item \
+                                             list-group-item-secondary'>{0} \
+                                             missed!</li>".format(
+                                                 actor['characterName'])))
             elif not is_player and actor['health']:
                 event = monsterAttack(actor, players, raid)
                 if event:
-                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-danger'>{0} attacked {1} for {2} damage!</li>"
-                                     .format(actor['name'],
-                                             event[0], event[1])))
+                    event_log.append(
+                        safestring.mark_safe("<li class='list-group-item \
+                                             list-group-item-danger'>{0} \
+                                             attacked {1} for {2} damage!</li>"
+                                             .format(actor['name'],
+                                                     event[0], event[1])))
                 else:
-                    event_log.append(safestring.mark_safe("<li class='list-group-item list-group-item-secondary'>{} missed!</li>"
-                                     .format(actor['name'])))
+                    event_log.append(
+                        safestring.mark_safe("<li class='list-group-item \
+                                             list-group-item-secondary'>{} \
+                                             missed!</li>"
+                                             .format(actor['name'])))
         updateMonsters(monsters)
         raid['move1'] = None
         raid['move2'] = None
@@ -412,7 +500,11 @@ def raidPlay(request):
     return render(request, 'game/raid-play.html', context)
 
 
-def raidAttack(request):
+def raidUpdate(request):
+    pk = request.GET.get('pk')
+    raid = getRaid(pk)
+    raid['monsters'] = getMonsters(raid['user1'])
+    return JsonResponse(raid)
     pk = request.GET.get('pk')
     raid = getRaid(pk)
     if not raid:
@@ -427,6 +519,7 @@ def raidAttack(request):
         raid['move3'] = mID
     updateRaid(raid)
     return redirect('game-raid-play')
+
 
 def updateSkills(request):
     user = getUserInfo(request.user.userID)
@@ -448,7 +541,3 @@ def updateSkills(request):
         updateUserInfo(user)
         print(user)
     return render(request, 'game/index.html', {"userInfo": user['userID']})
-
-
-
-

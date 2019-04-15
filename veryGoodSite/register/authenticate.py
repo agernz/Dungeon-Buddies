@@ -22,7 +22,7 @@ class authBackend:
             user = User(username=username, userID=user_id)
         except Exception as e:
             if settings.DEBUG:
-                print(e)
+                print("get_user", e)
         finally:
             c.close()
         return user
@@ -39,7 +39,7 @@ class authBackend:
             user = User(username=uname, userID=user_details[0])
         except Exception as e:
             if settings.DEBUG:
-                print(e)
+                print("getUserFromNamePwd", e)
         finally:
             c.close()
         return user

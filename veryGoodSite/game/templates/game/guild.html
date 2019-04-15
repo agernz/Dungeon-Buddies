@@ -13,8 +13,15 @@
   $("#guildNavLink").addClass('active')
 </script>
 {% if guildName %}
-<a href="{% url 'game-guild' %}?leave=1">Leave Guild :(</a>
-<h1>{{ guildName }}</h1>
+<div class="row">
+  <div class="col">
+    <h1>{{ guildName }}</h1>
+  </div>
+  <div class="col-3 mt-2">
+    <a class="btn-sm btn-danger" href="{% url 'game-guild' %}?leave=1">Leave Guild</a>
+  </div>
+</div>
+
   <table class="table">
     <thead>
       <tr>

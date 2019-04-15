@@ -1,4 +1,5 @@
 {% extends "game/base.html" %}
+{% load static %}
 {% block menu %}
   {% if user.is_authenticated %}
     {% include "game/navbar-logged-in.html" %}
@@ -11,12 +12,98 @@
   $(".nav-item").removeClass('active')
   $("#raidNavLink").addClass('active')
 </script>
-<h4>Starting a Level {{ level }} raid. Get Ready!</h4>
-<h4>Partner 1: {{ partners.0 }}</h4>
-<h4>Partner 2: {{ partners.1 }}</h4>
+<div class="container h-100">
+  <div class="row align-items-center h-100">
+    <div class="col-lg-8 col-sm colm-md mx-auto mt-3 text-center">
+      <style type="text/css">
+        .thumbnail {
+            border: 0 none;
+            box-shadow: none;
+        }
+      </style>
+      <div class="row">
+        <div class="col-3"><img src="{% static 'game/spikeflipped.png' %}" class="thumbnail"></div>
+        <div class="col"><h2>Starting a level {{ level }} raid.<br>Get Ready!</h2></div>
+        <div class="col-3"><img src="{% static 'game/arrow.png' %}" class="thumbnail"></div>
+      </div>
+      {% if partners.0 %}
+      <h4>
+        <span id="partner1text">Waiting for {{ partners.0 }} </span>
+        <span style="color: Green;">
+          <div class="spinner-grow text-primary" role="status" id="partner1spinner"></div><i class="fas fa-check" hidden id="partner1check"></i>
+        </span>
+      </h4>
+      {% endif %}
+      {% if partners.1 %}
+      <h4>
+        <span id="partner2text">Waiting for {{ partners.1 }} </span>
+        <span style="color: Green;">
+          <div class="spinner-grow text-primary" role="status" id="partner2spinner"></div><i class="fas fa-check" hidden id="partner2check"></i>
+        </span>
+      </h4>
+      {% endif %}
+      {% if is_owner %}
+        <a class="btn btn-primary mr-2" href="" id="startRaidButton">Start Raid!</a>
+        <a class="btn btn-danger ml-2" href="{% url 'game-raid' %}?cancel=1">Cancel Raid</a>
+      {% else %}
+        <h4>
+          <span id="partner2text">Waiting for {{ raidOwner }} to start the raid</span>
+          <div class="spinner-grow text-primary" role="status"</div>
+        </h4>
+        <a class="btn btn-primary text-white" id="readyButton">I'm Ready!</a>
+      {% endif %}
+      <script>
+          var raidStageSocket = new WebSocket('ws://' + window.location.host +
+          '/ws/raid-stage/' + {{ pk }} + '/');
+          raidStageSocket.onopen = function(e) {
+            console.log('Connected')
+          }
+          // raidStageSocket.onmessage = function(e) {
+          //   console.log('onMessage')
+          //   var data = JSON.parse(e.data);
+          //   var playerReadyID = data['playerID'];
+          //   console.log(playerReadyID);
+          // };
 
-{% if is_owner %}
-<a class="btn btn-primary" href="{% url 'game-raid-play' %}">Start Raid!</a>
-<a class="btn btn-danger" href="{% url 'game-raid' %}?cancel=1">Cancel Raid</a>
-{% endif %}
+          raidStageSocket.onmessage = function(e) {
+            // if (e)
+            var data = JSON.parse(e.data);
+            var playerReadyID = data['playerID'];
+
+            if (playerReadyID == "{{ partnerUserIDs.0 }}") {
+              $('#partner1spinner').hide(1);
+              $('#partner1check').removeAttr('hidden');
+              $('#partner1text').text("{{ partners.0 }} is ready ");
+            } else if (playerReadyID == "{{ partnerUserIDs.1 }}") {
+              $('#partner2spinner').hide(1);
+              $('#partner2check').removeAttr('hidden');
+              $('#partner2text').text("{{ partners.1 }} is ready ");
+            } else if (playerReadyID == "{{ pk }}") {
+              window.location.href = "{% url 'game-raid-render' pk %}"
+            };
+
+            // document.querySelector('#event-log').value += (events + '\n');
+            // console.log(playerReady);
+          };
+
+          raidStageSocket.onclose = function(e) {
+            console.error('socket closed');
+          };
+
+          $('#startRaidButton').click(function() {
+            raidStageSocket.send(JSON.stringify({
+                'playerID': {{ user.userID }},
+            }));
+          });
+
+          $('#readyButton').click(function() {
+            raidStageSocket.send(JSON.stringify({
+                'playerID': {{ user.userID }},
+            }));
+          });
+
+      </script>
+    </div>
+  </div>
+</div>
 {% endblock %}
