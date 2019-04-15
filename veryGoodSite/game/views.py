@@ -150,14 +150,15 @@ def raidPage(request):
                        .format(5**(level-1), 3*(2**(level-1)),
                                2*(5**(level-1)))})
 
-    guildID = getUserGuild(request.user.userID)[0]
+    guild = getUserGuild(request.user.userID)
     context = {
         'members': '',
         'levels': levels,
         'guildID': ''
     }
 
-    if guildID:
+    if guild:
+        guildID = guild[0]
         guildMembers = getGuildMembers(request.user.userID, guildID, False)
         context['members'] = guildMembers
         context['guildID'] = guildID
