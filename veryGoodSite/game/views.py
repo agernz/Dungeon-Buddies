@@ -143,11 +143,10 @@ def raidPage(request):
         return redirect("game-raid-render", rID=raid['user1'])
 
     levels = []
-    for l in range(1, NUM_LEVELS + 1):
+    for level in range(1, NUM_LEVELS + 1):
         levels.append({"description": "Reward: {0} gold and {1} exp. \
                        Lose {2} gold on failure."
-                       .format(math.floor(l * 1.5), l, math.ceil(l * 1.5))})
-
+                       .format(5**(level-1), 3*(2**(level-1)), 2*(5**(level-1)))})
     context = {
         'members': '',
         'levels': levels
@@ -300,11 +299,11 @@ def endRaid(actors, raid, has_won):
             if 'raid_health' in keys:
                 del user['raid_health']
             if has_won:
-                user['exp'] += raid['raidLevel']
-                user['gold'] += math.floor(raid['raidLevel'] * 1.5)
+                user['exp'] += (2**(raid['raidLevel'] - 1)) * 3
+                user['gold'] += 5**(raid['raidLevel'] - 1)
             else:
                 user['exp'] += 1
-                user['gold'] = max(0, user['gold'] - raid['raidLevel'])
+                user['gold'] = max(0, user['gold'] - 2*(5**(raid['raidLevel'] - 1)))
             updateUserInfo(user)
 
 

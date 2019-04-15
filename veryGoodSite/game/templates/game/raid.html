@@ -14,8 +14,8 @@
 <div class="container">
   <div class="row">
     <div class="col">
-      <h2>Design a Raid</h2>
-      <h4>Choose a level and up to two guild partners, or go solo.</h4>
+      <h2>Embark on a Raid</h2>
+      <h4>Adventure solo or with up to two guild partners.</h4>
     </div>
     <div class="col-2">
       <button type="button" class="btn-lg btn-success mt-2" id="start-raid">Start Raid</button>
@@ -42,7 +42,7 @@
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="noLevelSelectedModal">You have no level selected.</h5>
+              <h5 class="modal-title" id="noLevelSelectedModal">No raid selected.</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -60,13 +60,13 @@
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="pendingRaidModal">You have a pending raid.</h5>
+              <h5 class="modal-title" id="pendingRaidModal">Already in a raid group.</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
-              You cannot start a raid with a pending raid.
+              You cannot start a raid while in a group.
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
@@ -188,7 +188,7 @@
                 <div class="container">
                   <div class="row">
                     <div class="col">
-                      Create or join a guild, or add guild members to invite partners!
+                      Invite players from your guild to help you fight monsters.
                     </div>
                     <div class="col-3 mr-4 mt-1">
                       <a class="btn btn-primary" href="{% url 'game-guild' %}">Go to Guild</a>
@@ -205,8 +205,8 @@
   </div>
   <div class="row mb-4">
     <div class="col">
-      <h2>Raid Invites</h2>
-      <h4>Join your guild on raids to level up your players.</h4>
+      <h2>Join a Raid</h2>
+      <h4>Raid invitations from your guild members will appear here.</h4>
       <div class="col bg-light rounded">
         <div class="row">
           <div class="col">
@@ -234,7 +234,7 @@
                         var senderUsername = invite["senderUsername"]
                         var senderID = invite["senderID"]
                         newRow.className = "list-group-item ml-2 mr-2 raid-invite"
-                        newRow.innerHTML = `${senderUsername} has invited you on a raid. Join now!`
+                        newRow.innerHTML = `${senderUsername} has invited you to a raid.`
                         inviteDiv.appendChild(newRow)
 
                         var joinBtn = document.createElement("button")

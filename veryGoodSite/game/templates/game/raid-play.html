@@ -13,32 +13,41 @@
   You were defeated. <a href="{% url 'game-index' %}">Click here to return.</a>
 {% else %}
   <h4>Monsters</h4>
-  {% for m in monsters %} 
-  {{ m.name }} ({{ m.health }} HP)
-    {% if no_move and health != 0 and m.health != 0 %}
-    <a id="attack-btn" class="btn btn-primary btn-sm" href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">attack {{ m.name }}</a>
-    {% endif %}
-  <br>
-  {% endfor %} 
-
-  <h4>Party</h4>
-  {% for member in party %} 
-  {{ member.name }}
-  {% if member.health == 0 %}
-   (dead)
-  {% else %}
-   ({{ member.health }} HP)
-  {% endif %}
-
-  {% if member.no_move and member.health != 0 %}
-  <div class="spinner-border" role="status">
-    <span class="sr-only">Waiting...</span>
+  <div class="container">
+    <div class="row">
+      {% for m in monsters %}
+      <div class="col-sm">
+        <div style="font-weight: bold">
+          {{ m.name }} 
+        </div>
+      Health: {{ m.health }}
+      <br>
+      Attack: {{ m.attack }}
+      <br>
+      Defense: {{ m.defense }}
+      <br>
+      Speed: {{ m.speed }}
+      <br>
+      {% if no_move and health != 0 and m.health != 0 %}
+        <a id="attack-btn" class="btn btn-primary btn-sm" href="{% url 'game-raid-attack' %}?mID={{ m.monsterID }}&pk={{ pk }}">Attack</a>
+      {% endif %}
+      </div>
+      {% endfor %} 
+    </div>
   </div>
-  {% elif member.health != 0 %}
-   Ready!
-  {% endif %}
-  <br>
-  {% endfor %} 
+  <h4>Party</h4>
+  <div class="container">
+    <div class="row">
+      {% for member in party %}
+      <div class="col-sm">
+        <div style="font-weight: bold">
+          {{ member.name }}
+        </div>
+        Health: {{ member.health }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 {% endif %}
 
 <textarea id="event-log" cols="50" rows="10"></textarea><br/>

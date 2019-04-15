@@ -374,9 +374,13 @@ def generateMonsters(userID, raid_level):
             num_monsters = 1
         else:
             num_monsters = r.randint(1, 3)
+
+        m_level = max(5 * (2*(raid_level - 1) - 1), 1)
+        if (party_level > m_level):
+            m_level = min(party_level, 5 * (2*raid_level - 1))
         for i in range(num_monsters):
             m_name = r.choice(monster_names)
-            m_level = max(party_level, 5 * (2*raid_level - 1))
+            m_level = max(party_level, 5 * (2*raid_level - 2))
             m_health = max(r.randint(0, m_level) // num_monsters, 1)
             m_attack = max(r.randint(0, m_level // 3) // num_monsters, 1)
             m_defense = max(r.randint(0, m_level // 3) // num_monsters, 1)
