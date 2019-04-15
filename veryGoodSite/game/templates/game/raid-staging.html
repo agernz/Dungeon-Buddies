@@ -23,11 +23,15 @@
       </style>
       <div class="row">
         <div class="col-3"><img src="{% static 'game/spikeflipped.png' %}" class="thumbnail"></div>
-        <div class="col"><h2>Start your Level {{ level }} raid.<br>Get Ready!</h2></div>
+        <div class="col"><h2>Starting a level {{ level }} raid.<br>Get Ready!</h2></div>
         <div class="col-3"><img src="{% static 'game/arrow.png' %}" class="thumbnail"></div>
       </div>
+      {% if partners.0 %}
       <h4>Partner 1: {{ partners.0 }}</h4>
+      {% endif %}
+      {% if partners.1 %}
       <h4>Partner 2: {{ partners.1 }}</h4>
+      {% endif %}
       {% if is_owner %}
         <a class="btn btn-primary mr-2" href="{% url 'game-raid-play' %}">Start Raid!</a>
         <a class="btn btn-danger ml-2" href="{% url 'game-raid' %}?cancel=1">Cancel Raid</a>
