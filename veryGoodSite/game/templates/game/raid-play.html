@@ -64,8 +64,7 @@
 <ul id="event-log">
 </ul>
 <script>
-    var raidSocket = new WebSocket('ws://' + window.location.host +
-   window.onload = function() {
+    window.onload = function() {
       $.ajax({
         type: "GET",
         url: "{% url 'game-raid-update' %}?pk={{ pk }}",
@@ -107,8 +106,7 @@
       });
     };
 
-    var raidSocket = new WebSocket('ws://' + window.location.host + 
-      '/ws/raid/' + {{ pk }} + '/');
+    var raidSocket = new WebSocket('ws://' + window.location.host + '/ws/raid/' + {{ pk }} + '/');
 
     raidSocket.onmessage = function(e) {
       console.log('onMessage');
