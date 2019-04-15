@@ -33,6 +33,7 @@
       {% endif %}
       </div>
       {% endfor %}
+    <div id='monsters' class="row">
     </div>
   </div>
   <br>
@@ -55,21 +56,77 @@
         {% endif %}
       </div>
       {% endfor %}
+    <div id='party' class="row">
     </div>
   </div>
 {% endif %}
 <br>
-<textarea id="event-log" cols="50" rows="10"></textarea><br/>
+<ul id="event-log">
+</ul>
 <script>
     var raidSocket = new WebSocket('ws://' + window.location.host +
+   window.onload = function() {
+      $.ajax({
+        type: "GET",
+        url: "{% url 'game-raid-update' %}?pk={{ pk }}",
+        dataType: "json",
+        success: function (response) {
+          var monster_data = response.monsters
+          var raid_data = response.raid
+          var monsterdiv = document.querySelector('#monsters');
+          monster_data.forEach(function(elem) {
+            var btn = "<a id='attack-btn' class='btn btn-primary btn-sm' onclick='raidUpdate("
+              + elem.monsterID + ")'>Attack</a>";
+            var content = "<div class='col-sm'><div style='font-weight:bold'>"
+              + elem.name + "</div>" + "Health: " + elem.health + "<br>" +
+              "Attack: " + elem.attack + "<br>" + "Defense: " + elem.defense +
+              "<br>" + "Speed: " + elem.speed + "<br>";
+            if (response.no_move && response.health != 0 && elem.health != 0) {
+              content += btn;
+            }
+            monsterdiv.innerHTML += content + "</div>";
+          });
+
+          var party_data = response.party
+          var partyDiv = document.querySelector('#party');
+          party_data.forEach(function(elem) {
+            var content = "<div class='col-sm'><div style='font-weight:bold'>"
+              + elem.name + "</div>" + "Health: " + elem.health + "<br>";
+            if (response.no_move && response.health != 0) {
+              content += "Status: selecting move"
+            }
+            else if (!response.no_move && response.health != 0) {
+              content += "Status: Ready"
+            }
+            else {
+              content += "Status: Dead"
+            }
+            partyDiv.innerHTML += content + "</div>";
+          });
+        }
+      });
+    };
+
+    var raidSocket = new WebSocket('ws://' + window.location.host + 
       '/ws/raid/' + {{ pk }} + '/');
 
     raidSocket.onmessage = function(e) {
-      console.log('onMessage')
+      console.log('onMessage');
       var data = JSON.parse(e.data);
       var events = data['events'];
-      document.querySelector('#event-log').value += (events + '\n');
-      console.log(pk, events);
+      var eventlog = document.querySelector('#event-log');
+      events.forEach(function(elem) {
+        eventlog.innerHTML += elem;
+      });
+
+      $.ajax({
+        type: "GET",
+        url: "{% url 'game-raid-update' %}?pk={{ pk }}",
+        dataType: "json",
+        success: function (response) {
+          console.log(response)
+        }
+      });
     };
 
     raidSocket.onclose = function(e) {
@@ -77,7 +134,28 @@
     };
 
 
-    document.querySelector('#attack-btn').onclick = function(e) {
+   var raidUpdate = function(mID) {
+      $.ajax({
+        type: "GET",
+        url: "{% url 'game-raid-update' %}?pk={{ pk }}&mID=" + mID,
+        dataType: "json",
+        success: function (response) {
+          console.log(response);
+          $('#attack-btn').hide();
+          var monster_data = response['monsters']
+          var raid_data = response['raid']
+          var monsterdiv = document.querySelector('#monsters');
+          monster_data.forEach(function(elem) {
+            var content = "<div class='col-sm'><div style='font-weight:bold'>"
+              + elem['name'] + "</div>" + "Health: " + elem['health'] + "<br>" +
+              "Attack: " + elem['attack'] + "<br>" + "Defense: " + elem['defense'] +
+              "<br>" + "Speed: " + elem['speed'] + "<br>" + "</div>";
+            monsterdiv.innerHTML += content;
+          });
+
+        }
+      });
+
       if (events) {
         console.log(events)
         var events = ["test", "attac"];
