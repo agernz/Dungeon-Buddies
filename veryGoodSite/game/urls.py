@@ -13,7 +13,7 @@ urlpatterns = [
          name='game-raid-get-invites'),
     re_path(r'^raid-dungeon/(?P<rID>\d+)/$', views.raidRender,
             name='game-raid-render'),
-    path('raid-dungeon-attack/', views.raidAttack, name='game-raid-attack'),
+    path('raid-dungeon-update/', views.raidUpdate, name='game-raid-update'),
     path('stats/', views.statsPage, name='game-stats'),
     path('raid-join/', views.joinRaid,
          name='game-raid-join'),
