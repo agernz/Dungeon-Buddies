@@ -23,12 +23,12 @@
                   <img src="{% static 'game/archer.png' %}" alt="profile picture" class="img-thumbnail">
                 </div>
                 <div class="col-8">
-                  <div class="row">
+                  <h4 class="row">
                     Username: {{ userInfo.username }}
-                  </div>
-                  <div class="row">
+                  </h4>
+                  <h4 class="row">
                     Character: {{ userInfo.characterName }}
-                  </div>
+                  </h4>
                 </div>
               </div>
               <div class="row">
@@ -37,7 +37,7 @@
                   Level: {{userInfo.level }}
                 </div>
                 <div class="col-6" id="exp">
-                  <img src="{% static 'game/resized/exp.png' %}" alt="exp-pic" class="img-fluid"> Exp: {{ userInfo.exp }}/1
+                  <img src="{% static 'game/resized/exp.png' %}" alt="exp-pic" class="img-fluid"> Exp:
                 </div>
               </div>
               <div class = "row mb-2">
@@ -89,11 +89,58 @@
             </div>
           </div>
           <div class="col ml-0 mr-0 bg-light rounded">
-            <div class="mt-2 mb-2">
-              Raid Invites:
-              <div id="inviteList"></div>
+            <h4 class="mt-2 text-center">
+              Raid Invites
+            </h4>
+            <div class="row">
+              <div class="col">
+                <ul class="list-group mb-4" id="inviteUL">
+                </ul>
+                <script type="text/javascript">
+                  function getInvites(){
+                    $.ajax({
+                      type: "GET",
+                      url: "{% url 'game-raid-get-invites' %}",
+                      dataType: "json",
+                      success: function(response){
+                        var inviteDiv = document.getElementById("inviteUL");
+                        while (inviteDiv.firstChild) {
+                            inviteDiv.removeChild(inviteDiv.firstChild);
+                        }
+                        if (response["invites"] == "") {
+                          var div = document.createElement("UL")
+                          div.className = "list-group-item ml-2 mr-2"
+                          div.innerHTML = "You have no pending invites."
+                          inviteDiv.appendChild(div)
+                        } else {
+                          response["invites"].forEach(function(invite){
+                            var newRow = document.createElement("UL")
+                            var senderUsername = invite["senderUsername"]
+                            var senderID = invite["senderID"]
+                            newRow.className = "list-group-item ml-2 mr-2 raid-invite"
+                            newRow.innerHTML = `${senderUsername} has invited you to a raid.`
+                            inviteDiv.appendChild(newRow)
+
+                            var joinBtn = document.createElement("button")
+                            joinBtn.className = "join-raid-btn btn btn-primary mt-2 ml-4"
+                            joinBtn.innerHTML = "Join Raid"
+                            joinBtn.id = `${senderID}`
+                            newRow.appendChild(joinBtn)
+                          })
+                        }
+                      }
+                    });
+                  };
+                  $(document).on('click', '.join-raid-btn', function() {
+                    window.location.href = `{% url 'game-raid-join' %}?id=${this.id}`
+                  });
+
+                  window.onload = getInvites();
+                  window.setInterval(function(){ getInvites(); }, 50000)
+                </script>
+              </div>
             </div>
-            <script type="text/javascript">
+            <!-- <script type="text/javascript">
               function getInvites(){
                 $.ajax({
                   type: "GET",
@@ -115,7 +162,7 @@
               };
               window.onload = getInvites;
               window.setInterval(function(){ getInvites(); }, 50000)
-            </script>
+            </script> -->
           </div>
         </div>
         <div class="row mt-2">
@@ -132,9 +179,9 @@
           // imageText = " <img src="{% static "game/resized/exp.png" %}" class="img-fluid">";
           // text = experienceText + imageText;
           text = experienceText;
-          exp.innerHTML = text;
+          exp.innerHTML = `<img src=\"{% static 'game/resized/exp.png' %}\" alt=\"exp-pic\" class=\"img-fluid\"> ${text}`;
         }
-        window.onload = getExp;
+        window.onload = getExp();
       </script>
     {% else %}
       <div class="container h-100">
