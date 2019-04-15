@@ -206,8 +206,6 @@ def raidStage(request, rID):
         ownerInfo = getUserInfo(raid["user1"])
 
         pid1 = pid2 = p1username = p2username = None
-        print(raid["user2"], request.user.userID)
-        print(raid["user3"], request.user.userID)
         if raid["user2"] and raid["user2"] != request.user.userID:
             p1 = getUserInfo(raid["user2"])
             p1username = p1["username"]
