@@ -160,15 +160,6 @@
           });
         }
         if (response.events) {
-          var eventlog = document.querySelector('#event-log');
-          response.events.forEach(function(elem) {
-            var temp = "";
-            var inner = eventlog.innerHTML;
-            if (elem != "won" && elem != "lose") {
-              temp += elem;
-            }
-            eventlog.innerHTML = temp + inner;
-          });
           console.log('send events')
           raidSocket.send(JSON.stringify({
               'events': response.events
