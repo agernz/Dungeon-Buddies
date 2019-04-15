@@ -149,14 +149,19 @@ def raidPage(request):
                        Lose {2} gold on failure."
                        .format(5**(level-1), 3*(2**(level-1)),
                                2*(5**(level-1)))})
+
+    guildID = getUserGuild(request.user.userID)[0]
     context = {
         'members': '',
-        'levels': levels
+        'levels': levels,
+        'guildID': ''
     }
-    guildID = getUserGuild(request.user.userID)
+
     if guildID:
-        guildMembers = getGuildMembers(request.user.userID, guildID[0], False)
+        guildMembers = getGuildMembers(request.user.userID, guildID, False)
         context['members'] = guildMembers
+        context['guildID'] = guildID
+
     return render(request, 'game/raid.html', context)
 
 
@@ -232,17 +237,21 @@ def joinRaid(request):
     id = request.user.userID
     raid_owner = request.GET.get('id')
     raid = getRaid(raid_owner)
-    userInfo = getUserInfo(id)
-    if raid['user2'] == id or raid['user3'] == id:
-        print("joinRaid: Player {} already accepted".format(id))
-    elif not raid['user2']:
-        raid['user2'] = id
-        raid['health2'] = userInfo['health']
-    else:
-        raid['user3'] = id
-        raid['health3'] = userInfo['health']
-    updateRaid(raid)
-    return redirect("game-raid-stage", rID=raid_owner)
+
+    if raid:
+        userInfo = getUserInfo(id)
+        if raid['user2'] == id or raid['user3'] == id:
+            print("joinRaid: Player {} already accepted".format(id))
+        elif not raid['user2']:
+            raid['user2'] = id
+            raid['health2'] = userInfo['health']
+        else:
+            raid['user3'] = id
+            raid['health3'] = userInfo['health']
+        updateRaid(raid)
+        return redirect("game-raid-stage", rID=raid_owner)
+    messages.warning(request, "Raid Expired.")
+    return redirect("game-raid")
 
 @login_required
 def raidRender(request, rID):

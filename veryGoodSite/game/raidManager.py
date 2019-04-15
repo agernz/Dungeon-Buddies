@@ -68,3 +68,38 @@ class RaidStageManager(WebsocketConsumer):
         self.send(text_data=json.dumps({
             'playerID': playerID
         }))
+
+class RaidInviteManager(WebsocketConsumer):
+    def connect(self):
+        self.raid_name = self.scope['url_route']['kwargs']['gID']
+        # print("name: ", self.raid_name)
+        self.raid_name = 'raid-invite-%s' % self.raid_name
+        # print("name: ", self.raid_name)
+        async_to_sync(self.channel_layer.group_add)(
+            self.raid_name,
+            self.channel_name
+        )
+        self.accept()
+
+    def disconnect(self, info):
+        async_to_sync(self.channel_layer.group_discard)(
+            self.raid_name,
+            self.channel_name
+        )
+
+    def receive(self, text_data):
+        data = json.loads(text_data)
+        invite = data['invite']
+        async_to_sync(self.channel_layer.group_send)(
+            self.raid_name,
+            {
+                'type': 'invite_pending',
+                'invite': invite,
+            }
+        )
+
+    def invite_pending(self, data):
+        invite = data['invite']
+        self.send(text_data=json.dumps({
+            'invite': invite
+        }))
