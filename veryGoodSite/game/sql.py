@@ -330,6 +330,7 @@ def getRaidInvites(userID):
                   [userID])
         # responseData = fetchone()
         for tup in c.fetchall():
+            # print("tup:", tup)
             responseData["invites"].append({
                 "senderUsername": tup[0],
                 "senderID": tup[1]

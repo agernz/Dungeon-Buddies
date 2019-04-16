@@ -162,6 +162,34 @@ def raidPage(request):
 
     return render(request, 'game/raid.html', context)
 
+@login_required
+def raidStageRender(request, rID):
+    level = request.POST.get("level", None)
+    pid1 = request.POST.get("partner1", None)
+    pid2 = request.POST.get("partner2", None)
+
+    partner1 = partner2 = None
+    if pid1 != "undefined":
+        partner1 = getUserInfo(pid1)
+    if pid2 != "undefined":
+        partner2 = getUserInfo(pid2)
+
+    p_name1 = p_name2 = None
+    if partner1:
+        p_name1 = partner1['username']
+    if partner2:
+        p_name2 = partner2['username']
+
+    uInfo = getUserInfo(request.user.userID)
+    context = {
+        "level": level,
+        "partners": [p_name1, p_name2],
+        "partnerUserIDs": [pid1, pid2],
+        "raidOwner": uInfo["username"],
+        "is_owner": True,
+        "pk": request.user.userID,
+    }
+    return render(request, 'game/raid-staging.html', context)
 
 @login_required
 def raidStage(request, rID):
@@ -192,14 +220,17 @@ def raidStage(request, rID):
             "partnerUserIDs": [pid1, pid2],
             "raidOwner": uInfo["username"],
             "is_owner": True,
-            "pk": request.user.userID
+            "pk": request.user.userID,
         }
+
         if createRaid(request.user.userID, level, uInfo["health"]):
-            return render(request, 'game/raid-staging.html', context)
+            # context['success'] = 1;
+            return JsonResponse({"success":1})
+            # return render(request, 'game/raid-staging.html', context)
         else:
             messages.warning(request, "Could not create Raid")
             return redirect('game-raid')
-
+            # return JsonResponse(context)
     else:
         raid = getRaid(rID)
         if not raid:

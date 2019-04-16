@@ -17,6 +17,7 @@ urlpatterns = [
             name='game-raid-render'),
     path('raid-dungeon-update/', views.raidUpdate, name='game-raid-update'),
     path('stats/', views.statsPage, name='game-stats'),
-    path('raid-join/', views.joinRaid,
-         name='game-raid-join'),
+    path('raid-join/', views.joinRaid, name='game-raid-join'),
+    re_path(r'^raid-start/(?P<rID>\d+)/$', views.raidStageRender, name='game-raid-stage-render'),
+
 ]
