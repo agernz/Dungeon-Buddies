@@ -31,7 +31,6 @@ class RaidManager(WebsocketConsumer):
         )
 
     def raidData(self, data):
-        print('raidData')
         events = data['events']
         print(events)
         self.send(text_data=json.dumps({
@@ -72,12 +71,11 @@ class RaidStageManager(WebsocketConsumer):
             'playerID': playerID
         }))
 
+
 class RaidInviteManager(WebsocketConsumer):
     def connect(self):
         self.raid_name = self.scope['url_route']['kwargs']['gID']
-        # print("name: ", self.raid_name)
         self.raid_name = 'raid-invite-%s' % self.raid_name
-        # print("name: ", self.raid_name)
         async_to_sync(self.channel_layer.group_add)(
             self.raid_name,
             self.channel_name
