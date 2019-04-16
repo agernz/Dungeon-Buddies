@@ -19,7 +19,7 @@ from game.sql import (
 NUM_LEVELS = 5
 
 
-def index(request):
+def updateStats(request):
     if request.user.is_authenticated:
         user = getUserInfo(request.user.userID)
         bID = request.GET.get('bID')
@@ -37,11 +37,17 @@ def index(request):
                 user['speed'] += 1
                 user['skillPoints'] -= 1
             updateUserInfo(user)
-        if user['exp'] >= user['level']*5:
+    return JsonResponse(user)
+
+
+def index(request):
+    if request.user.is_authenticated:
+        user = getUserInfo(request.user.userID)
+        while (user['exp'] >= user['level'] * 5):
             user['skillPoints'] += 2
             user['exp'] -= user['level']*5
             user['level'] += 1
-            updateUserInfo(user)
+        updateUserInfo(user)
         return render(request, 'game/index.html',
                       {"userInfo": user})
     return render(request, 'game/index.html')
@@ -489,23 +495,3 @@ def raidUpdate(request):
         "lose": has_lost
     }
     return JsonResponse(context)
-
-
-def updateSkills(request):
-    user = getUserInfo(request.user.userID)
-    bID = request.GET.get('bID')
-    if user['skillPoints'] > 0:
-        if bID == 1:
-            user['health'] += 1
-            user['skillPoints'] -= 1
-        elif bID == 2:
-            user['attack'] += 1
-            user['skillPoints'] -= 1
-        elif bID == 3:
-            user['defense'] += 1
-            user['skillPoints'] -= 1
-        elif bID == 4:
-            user['speed'] += 1
-            user['skillPoints'] -= 1
-        updateUserInfo(user)
-    return render(request, 'game/index.html', {"userInfo": user['userID']})
