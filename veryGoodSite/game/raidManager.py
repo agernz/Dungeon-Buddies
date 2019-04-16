@@ -32,7 +32,6 @@ class RaidManager(WebsocketConsumer):
 
     def raidData(self, data):
         events = data['events']
-        print(events)
         self.send(text_data=json.dumps({
             'events': events
         }))

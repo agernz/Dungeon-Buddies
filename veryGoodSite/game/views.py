@@ -168,6 +168,7 @@ def raidPage(request):
 
     return render(request, 'game/raid.html', context)
 
+
 @login_required
 def raidStageRender(request, rID):
     level = request.POST.get("level", None)
@@ -196,6 +197,7 @@ def raidStageRender(request, rID):
         "pk": request.user.userID,
     }
     return render(request, 'game/raid-staging.html', context)
+
 
 @login_required
 def raidStage(request, rID):
@@ -231,7 +233,7 @@ def raidStage(request, rID):
 
         if createRaid(request.user.userID, level, uInfo["health"]):
             # context['success'] = 1;
-            return JsonResponse({"success":1})
+            return JsonResponse({"success": 1})
             # return render(request, 'game/raid-staging.html', context)
         else:
             messages.warning(request, "Could not create Raid")
@@ -343,7 +345,7 @@ def playerAttack(player, monsters):
         return ()
     for m in monsters:
         if m['monsterID'] == int(player['move']):
-            var_attack = max(1, int(player['attack'] * .5))
+            var_attack = r.randint(0, int(player['attack'] * .25))
             var_attack *= r.randint(-1, 1)
             player_attack_value = max(1, player['attack'] - m['defense']
                                       + var_attack)
