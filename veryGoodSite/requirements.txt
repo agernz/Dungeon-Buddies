@@ -4,3 +4,4 @@ uwsgi
 django-crispy-forms
 channels
 channels_redis
+gunicorn

@@ -25,7 +25,7 @@ SECRET_KEY = '1&ffsh2*sb6*r_uih1&!1juh%y_7xf+e)%2b9--4!*-41&*&gw'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['ec2-18-219-152-5.us-east-2.compute.amazonaws.com','0.0.0.0']
+ALLOWED_HOSTS = ['ec2-3-16-186-229.us-east-2.compute.amazonaws.com','0.0.0.0']
 ASGI_APPLICATION = 'veryGoodSite.routing.application'
 CHANNEL_LAYERS = {
     'default': {
@@ -143,7 +143,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/staticfiles/'
+STATIC_ROOT = '/staticfiles/'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 LOGIN_URL = 'register-login'

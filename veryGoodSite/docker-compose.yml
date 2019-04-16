@@ -12,14 +12,25 @@ services:
 
   web:
     build: .
-    command: uwsgi uwsgi.ini
     volumes:
       - .:/code
-    ports:
-      - "8000:8000"
+      - ./staticfiles/:/static
+    expose:
+      - 8000
     depends_on:
       - db
       - redis
+    command: gunicorn veryGoodSite.wsgi:application --bind 0.0.0.0:8000 
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./staticfiles/:/static
+    ports:
+      - "80:80"
+    depends_on:
+      - web
 
   redis:
     image: 'redis'
