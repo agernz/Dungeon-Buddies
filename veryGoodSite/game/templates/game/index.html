@@ -50,7 +50,7 @@
                 </div>
                 <div class="col-6" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Earn skill points by leveling up.">
                   <img src="{% static 'game/key.png' %}" alt="skill_pic" class="img-fluid">
-                  Skill Points Available: <div id="skillz">{{ userInfo.skillPoints }}</div>
+                  Skill Points Available: <span id="skillz">{{ userInfo.skillPoints }}</span>
                 </div>
               </div>
               <br>
@@ -64,11 +64,11 @@
               <div class = "row mb-2">
                 <div class="col-6" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Spend skill points to increase your player stats.">
                   <img src="{% static 'game/sameHeight/beer.png' %}" alt="health-pic" class="img-fluid">
-                  Health: <div id="health">{{ userInfo.health }}</div>
+                  Health: <span id="health">{{ userInfo.health }}</span>
                 </div>
                 <div class="col-6" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Spend skill points to increase your player stats.">
                   <img src="{% static 'game/sameHeight/sword.png' %}" alt="attack-pic" class="img-fluid">
-                  Attack: <div id='atck'>{{ userInfo.attack }}</div>
+                  Attack: <span id='atck'>{{ userInfo.attack }}</span>
                 </div>
               </div>
               {% if userInfo.skillPoints %}
@@ -84,11 +84,11 @@
               <div class = "row mb-2">
                 <div class="col-6 mt-1" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Spend skill points to increase your player stats.">
                   <img src="{% static 'game/resized/shield.png' %}" alt="shield-pic" class="img-fluid">
-                  Defense: <div id="def">{{ userInfo.defense }}</div>
+                  Defense: <span id="def">{{ userInfo.defense }}</span>
                 </div>
                 <div class="col-6" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Spend skill points to increase your player stats.">
                   <img src="{% static 'game/sameHeight/boot.png' %}" alt="speed-pic" class="img-fluid">
-                  Speed: <div id="speed">{{ userInfo.speed }}</div>
+                  Speed: <span id="speed">{{ userInfo.speed }}</span>
                 </div>
               </div>
               {% if userInfo.skillPoints %}
