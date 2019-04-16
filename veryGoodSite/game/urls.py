@@ -21,5 +21,5 @@ urlpatterns = [
     path('stats/', views.statsPage, name='game-stats'),
     path('raid-join/', views.joinRaid, name='game-raid-join'),
     re_path(r'^raid-start/(?P<rID>\d+)/$', views.raidStageRender, name='game-raid-stage-render'),
-
+    re_path(r'^raid-check/(?P<rID>\d+)/$', views.raidReady, name='game-raid-ready'),
 ]

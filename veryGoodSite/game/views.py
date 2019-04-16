@@ -278,12 +278,25 @@ def joinRaid(request):
             messages.info(request, "You have already joined")
         elif not raid['user2']:
             raid['user2'] = id
-            raid['health2'] = userInfo['health']
         else:
             raid['user3'] = id
-            raid['health3'] = userInfo['health']
         updateRaid(raid)
         return redirect("game-raid-stage", rID=raid_owner)
+    messages.warning(request, "Raid Expired.")
+    return redirect("game-raid")
+
+@login_required
+def raidReady(request, rID):
+    id = request.user.userID
+    raid = getRaid(rID)
+    if raid:
+        userInfo = getUserInfo(id)
+        if raid['user2'] == id:
+            raid['health2'] = userInfo['health']
+        elif raid['user3'] == id:
+            raid['health3'] = userInfo['health']
+        updateRaid(raid)
+        return JsonResponse({"success":1})
     messages.warning(request, "Raid Expired.")
     return redirect("game-raid")
 
