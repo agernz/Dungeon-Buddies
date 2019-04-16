@@ -34,7 +34,7 @@
         var monsterdiv = document.querySelector('#monsters');
         monsterdiv.innerHTML = "";
         monster_data.forEach(function(elem) {
-          var btn = "<a id='attack-btn' class='btn btn-primary btn-sm' onclick='raidUpdate("
+          var btn = "<a id='attack-btn' class='btn btn-primary btn-sm text-white' onclick='raidUpdate("
             + elem.monsterID + ")'>Attack</a>";
           var content = "<div class='col-sm'><div style='font-weight:bold'>"
             + elem.name + "</div>" + "Health: " + elem.health + "<br>" +
@@ -78,7 +78,6 @@
   }
 
   raidSocket.onmessage = function(e) {
-    console.log('onMessage');
     var data = JSON.parse(e.data);
     var events = data['events'];
     if (events[0] == "won") {
@@ -129,7 +128,7 @@
           var monsterdiv = document.querySelector('#monsters');
           monsterdiv.innerHTML = "";
           monster_data.forEach(function(elem) {
-            var btn = "<a id='attack-btn' class='btn btn-primary btn-sm' onclick='raidUpdate("
+            var btn = "<a id='attack-btn' class='btn btn-primary btn-sm text-white' onclick='raidUpdate("
               + elem.monsterID + ")'>Attack</a>";
             var content = "<div class='col-sm'><div style='font-weight:bold'>"
               + elem.name + "</div>" + "Health: " + elem.health + "<br>" +
@@ -159,10 +158,12 @@
             partyDiv.innerHTML += content + "</div>";
           });
         }
+
+
         if (response.events) {
-          console.log('send events')
           raidSocket.send(JSON.stringify({
               'events': response.events
+              // 'events': "hello world"
           }));
         }
       }

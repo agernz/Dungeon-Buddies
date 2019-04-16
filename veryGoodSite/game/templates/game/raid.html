@@ -74,13 +74,22 @@
           </div>
         </div>
       </div>
-      <form id="raid_form_paramters" action="{% url 'game-raid-stage' rID=user.userID %}" method="POST">
+      <form id="raid_form_paramters" action="{% url 'game-raid-stage-render' rID=user.userID %}" method="POST">
+      <!-- <form id="raid_form_paramters"> -->
           {% csrf_token %}
           <input type="hidden" name="level" value=""/>
           <input type="hidden" name="partner1" value=""/>
           <input type="hidden" name="partner2" value=""/>
       </form>
       <script type="text/javascript">
+
+        // $(function(){
+        //   $("#raid_form_paramters").ajaxForm(function(){
+        //     console.log("submitted")
+        //     });
+        // });
+        var $form = $('#raid_form_paramters');
+
         $("#start-raid").click(function(){
           var partners = []
           var level = undefined
@@ -102,13 +111,33 @@
             p.elements["level"].value = level
             p.elements["partner1"].value = partners[0]
             p.elements["partner2"].value = partners[1]
-            document.getElementById("raid_form_paramters").submit()
-
-            raidInviteSocket.send(JSON.stringify({
-                'invite': "True",
-            }));
+            // document.getElementById("raid_form_paramters").submit()
+            // raidInviteSocket.send(JSON.stringify({
+            //     'invite': "True",
+            // }));
+            submitInvites()
           }
         });
+
+        submitInvites = function() {
+          $.ajax({
+            type: "POST",
+            url: "{% url 'game-raid-stage' rID=user.userID %}",
+            data: $form.serialize(),
+            dataType: "json",
+            success: function(response){
+              if (response['success']) {
+                raidInviteSocket.send(JSON.stringify({
+                    'invite': "True",
+                }));
+                document.getElementById("raid_form_paramters").submit()
+                // window.location.href = "{% url 'game-raid-stage-render' rID=user.userID %}"
+              }
+
+            }
+          });
+          // $("#raid_form_paramters").ajaxSubmit({url: '{% url "game-raid-stage" rID=user.userID %}', type: 'POST'})
+        };
       </script>
       <!-- End modal -->
     </div>
@@ -226,6 +255,7 @@
                 }
 
                 raidInviteSocket.onmessage = function(e) {
+
                   var data = JSON.parse(e.data);
                   var invite = data['invite'];
                   if (invite == "True") {
