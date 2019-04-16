@@ -343,7 +343,7 @@ def playerAttack(player, monsters):
         return ()
     for m in monsters:
         if m['monsterID'] == int(player['move']):
-            var_attack = max(1, int(player['attack'] * .5))
+            var_attack = r.randint(0, int(player['attack'] * .25))
             var_attack *= r.randint(-1, 1)
             player_attack_value = max(1, player['attack'] - m['defense']
                                       + var_attack)

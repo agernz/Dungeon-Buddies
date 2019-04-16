@@ -56,7 +56,7 @@
           </div>
         </div>
       </div>
-      <div class="modal fade" id="pendingRaidModal" tabindex="-1" role="dialog" aria-labelledby="pendingRaidModal" aria-hidden="true">
+     <!-- <div class="modal fade" id="pendingRaidModal" tabindex="-1" role="dialog" aria-labelledby="pendingRaidModal" aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
@@ -73,7 +73,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
       <form id="raid_form_paramters" action="{% url 'game-raid-stage-render' rID=user.userID %}" method="POST">
       <!-- <form id="raid_form_paramters"> -->
           {% csrf_token %}
@@ -93,9 +93,10 @@
         $("#start-raid").click(function(){
           var partners = []
           var level = undefined
-          if ($(".raid-invite").length > 0) {
+          /* if ($(".raid-invite").length > 0) {
             $('#pendingRaidModal').modal('show')
-          } else if ($(".chosen-member").length > 2) {
+          } */
+          if ($(".chosen-member").length > 2) {
             $('#tooManyPlayersModal').modal('show')
           } else if ($(".selected-level").length != 1) {
             $('#noLevelSelectedModal').modal('show')
@@ -111,10 +112,6 @@
             p.elements["level"].value = level
             p.elements["partner1"].value = partners[0]
             p.elements["partner2"].value = partners[1]
-            // document.getElementById("raid_form_paramters").submit()
-            // raidInviteSocket.send(JSON.stringify({
-            //     'invite': "True",
-            // }));
             submitInvites()
           }
         });
@@ -127,9 +124,11 @@
             dataType: "json",
             success: function(response){
               if (response['success']) {
-                raidInviteSocket.send(JSON.stringify({
-                    'invite': "True",
-                }));
+                if (raidInviteSocket) {
+		    raidInviteSocket.send(JSON.stringify({
+		    'invite': "True",
+	          }));
+                };
                 document.getElementById("raid_form_paramters").submit()
                 // window.location.href = "{% url 'game-raid-stage-render' rID=user.userID %}"
               }
@@ -248,8 +247,8 @@
             <script type="text/javascript">
               var raidInviteSocket;
               if ("{{ guildID }}" != "") {
-                raidInviteSocket = new WebSocket('ws://' + window.location.host +
-                '/ws/raid-invite/' + {{ guildID }} + '/');
+                raidInviteSocket = new WebSocket('ws://' + window.location.host + '/ws/raid-invite/' 
+                                                 + {{ guildID }} + '/');
                 raidInviteSocket.onopen = function(e) {
                   console.log('Connected')
                 }
