@@ -6,7 +6,6 @@ from game.forms.InviteForm import InviteForm
 from django.http import JsonResponse
 from django.utils import safestring
 import random as r
-import math
 from game.sql import (
     getUserInfo, leaveGuild, getGuildInvites, getGuildMembers, getGuildRank,
     getTop100, getUserRank, getUserGuild, getTop100Guilds, createNewGuild,
@@ -46,7 +45,7 @@ def index(request):
         user = getUserInfo(request.user.userID)
         while (user['exp'] >= user['level'] * 5 + user['level']**2):
             user['skillPoints'] += 2
-            user['exp'] -= user['level']*5
+            user['exp'] -= user['level'] * 5 + user['level']**2
             user['level'] += 1
         updateUserInfo(user)
         return render(request, 'game/index.html',
@@ -276,7 +275,6 @@ def joinRaid(request):
     raid_owner = request.GET.get('id')
     raid = getRaid(raid_owner)
     if raid:
-        userInfo = getUserInfo(id)
         if raid['user2'] == id or raid['user3'] == id:
             messages.info(request, "You have already joined")
         elif not raid['user2']:
@@ -300,9 +298,9 @@ def raidReady(request, rID):
         elif raid['user3'] == id:
             raid['health3'] = userInfo['health']
         updateRaid(raid)
-        return JsonResponse({"success":1})
+        return JsonResponse({"success": 1})
     messages.warning(request, "Raid Expired.")
-return redirect("game-raid")
+    return redirect("game-raid")
 
 
 @login_required
