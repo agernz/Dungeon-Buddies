@@ -56,7 +56,7 @@
           </div>
         </div>
       </div>
-     <!-- <div class="modal fade" id="pendingRaidModal" tabindex="-1" role="dialog" aria-labelledby="pendingRaidModal" aria-hidden="true">
+      <!-- <div class="modal fade" id="pendingRaidModal" tabindex="-1" role="dialog" aria-labelledby="pendingRaidModal" aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
@@ -82,20 +82,11 @@
           <input type="hidden" name="partner2" value=""/>
       </form>
       <script type="text/javascript">
-
-        // $(function(){
-        //   $("#raid_form_paramters").ajaxForm(function(){
-        //     console.log("submitted")
-        //     });
-        // });
         var $form = $('#raid_form_paramters');
 
         $("#start-raid").click(function(){
           var partners = []
           var level = undefined
-          /* if ($(".raid-invite").length > 0) {
-            $('#pendingRaidModal').modal('show')
-          } */
           if ($(".chosen-member").length > 2) {
             $('#tooManyPlayersModal').modal('show')
           } else if ($(".selected-level").length != 1) {
@@ -125,9 +116,9 @@
             success: function(response){
               if (response['success']) {
                 if (raidInviteSocket) {
-		    raidInviteSocket.send(JSON.stringify({
-		    'invite': "True",
-	          }));
+                  raidInviteSocket.send(JSON.stringify({
+                      'invite': "True",
+                  }));
                 };
                 document.getElementById("raid_form_paramters").submit()
                 // window.location.href = "{% url 'game-raid-stage-render' rID=user.userID %}"
@@ -257,6 +248,7 @@
 
                   var data = JSON.parse(e.data);
                   var invite = data['invite'];
+
                   if (invite == "True") {
                     getInvites()
                   }

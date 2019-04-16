@@ -43,9 +43,9 @@ def updateStats(request):
 def index(request):
     if request.user.is_authenticated:
         user = getUserInfo(request.user.userID)
-        while (user['exp'] >= user['level'] * 5):
+        while (user['exp'] >= user['level'] * 5 + user['level']**2):
             user['skillPoints'] += 2
-            user['exp'] -= user['level']*5
+            user['exp'] -= user['level'] * 5 + user['level']**2
             user['level'] += 1
         updateUserInfo(user)
         return render(request, 'game/index.html',
@@ -168,6 +168,7 @@ def raidPage(request):
 
     return render(request, 'game/raid.html', context)
 
+
 @login_required
 def raidStageRender(request, rID):
     level = request.POST.get("level", None)
@@ -196,6 +197,7 @@ def raidStageRender(request, rID):
         "pk": request.user.userID,
     }
     return render(request, 'game/raid-staging.html', context)
+
 
 @login_required
 def raidStage(request, rID):
@@ -231,7 +233,7 @@ def raidStage(request, rID):
 
         if createRaid(request.user.userID, level, uInfo["health"]):
             # context['success'] = 1;
-            return JsonResponse({"success":1})
+            return JsonResponse({"success": 1})
             # return render(request, 'game/raid-staging.html', context)
         else:
             messages.warning(request, "Could not create Raid")
@@ -273,15 +275,12 @@ def joinRaid(request):
     raid_owner = request.GET.get('id')
     raid = getRaid(raid_owner)
     if raid:
-        userInfo = getUserInfo(id)
         if raid['user2'] == id or raid['user3'] == id:
             messages.info(request, "You have already joined")
         elif not raid['user2']:
             raid['user2'] = id
-            raid['health2'] = userInfo['health']
         else:
             raid['user3'] = id
-            raid['health3'] = userInfo['health']
         updateRaid(raid)
         return redirect("game-raid-stage", rID=raid_owner)
     messages.warning(request, "Raid Expired.")
@@ -289,22 +288,47 @@ def joinRaid(request):
 
 
 @login_required
+def raidReady(request, rID):
+    id = request.user.userID
+    raid = getRaid(rID)
+    if raid:
+        userInfo = getUserInfo(id)
+        if raid['user2'] == id:
+            raid['health2'] = userInfo['health']
+        elif raid['user3'] == id:
+            raid['health3'] = userInfo['health']
+        updateRaid(raid)
+        return JsonResponse({"success": 1})
+    messages.warning(request, "Raid Expired.")
+    return redirect("game-raid")
+
+
+@login_required
 def raidRender(request, rID):
     raid = getRaid(rID)
-    if not raid:
+    uid = request.user.userID
+    userIsReady = True
+    if uid == raid['user2'] and raid['health2'] == 0:
+        raid['user2'] = None
+        userIsReady = False
+    elif uid == raid['user3'] and raid['health3'] == 0:
+        raid['user3'] = None
+        userIsReady = False
+    if not raid or not userIsReady:
+        updateRaid(raid)
         return redirect('game-raid')
     pk = raid['user1']
 
     # first time check for starting raid
-    if raid['stageing'] == 1 and request.user.userID == pk:
-        deleteInvites(request.user.userID)
+    if raid['stageing'] == 1 and uid == pk:
+        deleteInvites(uid)
         raid['stageing'] = 0
         updateRaid(raid)
     elif raid['stageing'] == 1:
         redirect('game-raid-stage', rID=pk)
 
     # create monsters at start
-    if noMonsters(pk):
+    if noMonsters(pk) and uid == pk:
         generateMonsters(pk, raid['raidLevel'])
 
     context = {

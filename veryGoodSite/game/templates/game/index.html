@@ -217,7 +217,7 @@
           });
         }
         function getExp() {
-          expNeeded = {{userInfo.level}} * 5;
+          expNeeded = {{userInfo.level}} * 5 + ({{ userInfo.level }} * {{ userInfo.level }});
           experienceText = "Exp: " + String({{userInfo.exp}}) + "/" + String(expNeeded);
           percentage = parseInt(({{userInfo.exp}}/expNeeded)*100, 10)
           text = experienceText;
