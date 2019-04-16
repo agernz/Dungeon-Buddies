@@ -53,7 +53,7 @@
           var content = "<div class='col-sm'><div style='font-weight:bold'>"
             + elem.name + "</div>" + "Health: " + elem.health + "<br>";
           if (elem.no_move && elem.health != 0) {
-            content += "Status: selecting move"
+            content += "Status: selecting move <div class='spinner-grow spinner-grow-sm text-dark'></div>"
           }
           else if (!elem.no_move && elem.health != 0) {
             content += "Status: Ready"
@@ -82,11 +82,11 @@
     var events = data['events'];
     if (events[0] == "won") {
       var content = document.querySelector('#all');
-      content.innerHTML = "Raid complete! <a href='{% url 'game-index' %}'>Click here to return.</a>";
+      content.innerHTML = "Raid complete! <a class='btn-sm btn-primary' href='{% url 'game-index' %}'>Click here to return.</a>";
     }
     else if (events[0] == "lose") {
       var content = document.querySelector('#all');
-      content.innerHTML = "You were defeated <a href='{% url 'game-index' %}'>Click here to return.</a>";
+      content.innerHTML = "You were defeated. <a class='btn-sm btn-primary' href='{% url 'game-index' %}'>Click here to return.</a>";
     }
     else {
       getUpdates();
@@ -147,7 +147,7 @@
             var content = "<div class='col-sm'><div style='font-weight:bold'>"
               + elem.name + "</div>" + "Health: " + elem.health + "<br>";
             if (elem.no_move && elem.health != 0) {
-              content += "Status: selecting move"
+              content += "Status: selecting move <div class='spinner-grow spinner-grow-sm text-dark'></div>"
             }
             else if (!elem.no_move && elem.health != 0) {
               content += "Status: Ready"
