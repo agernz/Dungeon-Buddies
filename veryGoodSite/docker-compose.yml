@@ -20,12 +20,12 @@ services:
     depends_on:
       - db
       - redis
-    command: gunicorn veryGoodSite.wsgi:application --bind 0.0.0.0:8000 
+    command: daphne -b 0.0.0.0 -p 8000 veryGoodSite.asgi:application
+    # command: gunicorn veryGoodSite.wsgi:application --bind 0.0.0.0:8000 
 
   nginx:
     build: ./nginx
     volumes:
-      - ./nginx:/etc/nginx/conf.d
       - ./staticfiles/:/static
     ports:
       - "80:80"
