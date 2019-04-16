@@ -88,9 +88,18 @@
           });
 
           $('#readyButton').click(function() {
-            raidStageSocket.send(JSON.stringify({
-                'playerID': {{ user.userID }},
-            }));
+            $.ajax({
+              type: "GET",
+              url: "{% url 'game-raid-ready' pk %}",
+              dataType: "json",
+              success: function(response){
+                if (response["success"]) {
+                  raidStageSocket.send(JSON.stringify({
+                      'playerID': {{ user.userID }},
+                  }));
+                }
+              }
+            });
           });
 
       </script>

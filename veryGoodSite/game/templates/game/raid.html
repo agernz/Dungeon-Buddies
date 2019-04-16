@@ -87,9 +87,6 @@
         $("#start-raid").click(function(){
           var partners = []
           var level = undefined
-          /* if ($(".raid-invite").length > 0) {
-            $('#pendingRaidModal').modal('show')
-          } */
           if ($(".chosen-member").length > 2) {
             $('#tooManyPlayersModal').modal('show')
           } else if ($(".selected-level").length != 1) {
@@ -122,7 +119,7 @@
                   raidInviteSocket.send(JSON.stringify({
                       'invite': "True",
                   }));
-                }
+                };
                 document.getElementById("raid_form_paramters").submit()
                 // window.location.href = "{% url 'game-raid-stage-render' rID=user.userID %}"
               }
@@ -251,6 +248,7 @@
 
                   var data = JSON.parse(e.data);
                   var invite = data['invite'];
+
                   if (invite == "True") {
                     getInvites()
                   }
