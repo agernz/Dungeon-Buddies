@@ -220,17 +220,13 @@
           expNeeded = {{userInfo.level}} * 5;
           experienceText = "Exp: " + String({{userInfo.exp}}) + "/" + String(expNeeded);
           percentage = parseInt(({{userInfo.exp}}/expNeeded)*100, 10)
-          // percentage = 45
-          // imageText = " <img src="{% static "game/resized/exp.png" %}" class="img-fluid">";
-          // text = experienceText + imageText;
           text = experienceText;
-          // exp.innerHTML = ``;
           exp.innerHTML = `
             <div class="row">
               <img src=\"{% static 'game/resized/exp.png' %}\" alt=\"exp-pic\" class=\"img-fluid\">
               <div class="col">
-                <div class="progress" style="height: 20px;">
-                  <div class="progress-bar bg-info" role="progressbar" style="width: ${percentage}%" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">${experienceText}</div>
+                <div class="progress" style="height: 20px; background-color: Gray">
+                  <div class="progress-bar bg-info" role="progressbar" style="width: ${percentage}%;" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">${experienceText}</div>
                 </div>
               </div>
             </div>
