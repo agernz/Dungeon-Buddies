@@ -6,6 +6,7 @@ from game.forms.InviteForm import InviteForm
 from django.http import JsonResponse
 from django.utils import safestring
 import random as r
+import math
 from game.sql import (
     getUserInfo, leaveGuild, getGuildInvites, getGuildMembers, getGuildRank,
     getTop100, getUserRank, getUserGuild, getTop100Guilds, createNewGuild,
@@ -43,7 +44,7 @@ def updateStats(request):
 def index(request):
     if request.user.is_authenticated:
         user = getUserInfo(request.user.userID)
-        while (user['exp'] >= user['level'] * 5):
+        while (user['exp'] >= user['level'] * 5 + user['level']**2):
             user['skillPoints'] += 2
             user['exp'] -= user['level']*5
             user['level'] += 1
