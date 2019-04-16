@@ -13,4 +13,4 @@ class RegisterForm(forms.Form):
     characterName = forms.CharField(label="Character Name",
                                     max_length=30,
                                     validators=[onlyCharNum])
-    password = forms.CharField(min_length=8, max_length=120)
+    password = forms.CharField(min_length=8, max_length=120,widget=forms.PasswordInput)
