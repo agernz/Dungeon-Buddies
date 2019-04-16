@@ -1,0 +1,173 @@
+{% extends "game/base.html" %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div id="all">
+  <h4>Monsters</h4>
+  <div class="container">
+    <div id='monsters' class="row">
+    </div>
+  </div>
+  <br>
+  <h4>Party</h4>
+  <div class="container">
+    <div id='party' class="row">
+    </div>
+  </div>
+</div>
+<br>
+<ul id="event-log">
+</ul>
+<script>
+  var getUpdates = function () {
+    $.ajax({
+      type: "GET",
+      url: "{% url 'game-raid-update' %}?pk={{ pk }}",
+      dataType: "json",
+      success: function (response) {
+        var monster_data = response.monsters
+        var monsterdiv = document.querySelector('#monsters');
+        monsterdiv.innerHTML = "";
+        monster_data.forEach(function(elem) {
+          var btn = "<a id='attack-btn' class='btn btn-primary btn-sm text-white' onclick='raidUpdate("
+            + elem.monsterID + ")'>Attack</a>";
+          var content = "<div class='col-sm'><div style='font-weight:bold'>"
+            + elem.name + "</div>" + "Health: " + elem.health + "<br>" +
+            "Attack: " + elem.attack + "<br>" + "Defense: " + elem.defense +
+            "<br>" + "Speed: " + elem.speed + "<br>";
+          if (response.no_move && response.health != 0 && elem.health != 0) {
+            content += btn;
+          }
+          monsterdiv.innerHTML += content + "</div>";
+        });
+
+        var party_data = response.party
+        var partyDiv = document.querySelector('#party');
+        partyDiv.innerHTML = "";
+        party_data.forEach(function(elem) {
+          var content = "<div class='col-sm'><div style='font-weight:bold'>"
+            + elem.name + "</div>" + "Health: " + elem.health + "<br>";
+          if (elem.no_move && elem.health != 0) {
+            content += "Status: selecting move"
+          }
+          else if (!elem.no_move && elem.health != 0) {
+            content += "Status: Ready"
+          }
+          else {
+            content += "Status: Dead"
+          }
+          partyDiv.innerHTML += content + "</div>";
+        });
+      }
+    });
+  };
+
+  window.onload = function() {
+    getUpdates();
+  };
+
+  var raidSocket = new WebSocket('ws://' + window.location.host + '/ws/raid/' + {{ pk }} + '/');
+
+  raidSocket.onopen = function(e) {
+    console.log('Connected')
+  }
+
+  raidSocket.onmessage = function(e) {
+    var data = JSON.parse(e.data);
+    var events = data['events'];
+    if (events[0] == "won") {
+      var content = document.querySelector('#all');
+      content.innerHTML = "Raid complete! <a href='{% url 'game-index' %}'>Click here to return.</a>";
+    }
+    else if (events[0] == "lose") {
+      var content = document.querySelector('#all');
+      content.innerHTML = "You were defeated <a href='{% url 'game-index' %}'>Click here to return.</a>";
+    }
+    else {
+      getUpdates();
+    }
+    var eventlog = document.querySelector('#event-log');
+    events.forEach(function(elem) {
+      var temp = "";
+      var inner = eventlog.innerHTML;
+      if (elem != "won" && elem != "lose") {
+        temp += elem;
+      }
+      eventlog.innerHTML = temp + inner;
+    });
+  };
+
+  raidSocket.onclose = function(e) {
+    console.error('socket closed');
+  };
+
+
+ var raidUpdate = function(mID) {
+    $.ajax({
+      type: "GET",
+      url: "{% url 'game-raid-update' %}?pk={{ pk }}&mID=" + mID,
+      dataType: "json",
+      success: function (response) {
+        if (response.won) {
+          response.events.unshift("won")
+          var content = document.querySelector('#all');
+          content.innerHTML = "Raid complete! <a href='{% url 'game-index' %}'>Click here to return.</a>";
+        }
+        else if (response.lose) {
+          response.events.unshift("lose")
+          var content = document.querySelector('#all');
+          content.innerHTML = "You were defeated <a href='{% url 'game-index' %}'>Click here to return.</a>";
+        }
+        else {
+          var monster_data = response.monsters
+          var monsterdiv = document.querySelector('#monsters');
+          monsterdiv.innerHTML = "";
+          monster_data.forEach(function(elem) {
+            var btn = "<a id='attack-btn' class='btn btn-primary btn-sm text-white' onclick='raidUpdate("
+              + elem.monsterID + ")'>Attack</a>";
+            var content = "<div class='col-sm'><div style='font-weight:bold'>"
+              + elem.name + "</div>" + "Health: " + elem.health + "<br>" +
+              "Attack: " + elem.attack + "<br>" + "Defense: " + elem.defense +
+              "<br>" + "Speed: " + elem.speed + "<br>";
+            if (response.no_move && response.health != 0 && elem.health != 0) {
+              content += btn;
+            }
+            monsterdiv.innerHTML += content + "</div>";
+          });
+
+          var party_data = response.party
+          var partyDiv = document.querySelector('#party');
+          partyDiv.innerHTML = "";
+          party_data.forEach(function(elem) {
+            var content = "<div class='col-sm'><div style='font-weight:bold'>"
+              + elem.name + "</div>" + "Health: " + elem.health + "<br>";
+            if (elem.no_move && elem.health != 0) {
+              content += "Status: selecting move"
+            }
+            else if (!elem.no_move && elem.health != 0) {
+              content += "Status: Ready"
+            }
+            else {
+              content += "Status: Dead"
+            }
+            partyDiv.innerHTML += content + "</div>";
+          });
+        }
+
+
+        if (response.events) {
+          raidSocket.send(JSON.stringify({
+              'events': response.events
+              // 'events': "hello world"
+          }));
+        }
+      }
+    });
+  };
+</script>
+{% endblock content %}

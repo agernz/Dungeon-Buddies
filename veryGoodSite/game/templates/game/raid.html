@@ -1,0 +1,320 @@
+{% extends "game/base.html" %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
+{% block content %}
+<script type="text/javascript">
+  $(".nav-item").removeClass('active')
+  $("#raidNavLink").addClass('active')
+</script>
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h2>Embark on a Raid</h2>
+      <h4>Adventure solo or with up to two guild partners.</h4>
+    </div>
+    <div class="col-2">
+      <button type="button" class="btn-lg btn-success mt-2" id="start-raid">Start Raid</button>
+      <!-- Error Models, greater than 2 raid members or no level-->
+      <div class="modal fade" id="tooManyPlayersModal" tabindex="-1" role="dialog" aria-labelledby="tooManyPlayersModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="tooManyPlayersModal">You have too many partners selected.</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              Select up to two partners to join you on a raid.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="noLevelSelectedModal" tabindex="-1" role="dialog" aria-labelledby="noLevelSelectedModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="noLevelSelectedModal">No raid selected.</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              Select a level for your raid.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="pendingRaidModal" tabindex="-1" role="dialog" aria-labelledby="pendingRaidModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="pendingRaidModal">Already in a raid group.</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              You cannot start a raid while in a group.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <form id="raid_form_paramters" action="{% url 'game-raid-stage-render' rID=user.userID %}" method="POST">
+      <!-- <form id="raid_form_paramters"> -->
+          {% csrf_token %}
+          <input type="hidden" name="level" value=""/>
+          <input type="hidden" name="partner1" value=""/>
+          <input type="hidden" name="partner2" value=""/>
+      </form>
+      <script type="text/javascript">
+
+        // $(function(){
+        //   $("#raid_form_paramters").ajaxForm(function(){
+        //     console.log("submitted")
+        //     });
+        // });
+        var $form = $('#raid_form_paramters');
+
+        $("#start-raid").click(function(){
+          var partners = []
+          var level = undefined
+          if ($(".raid-invite").length > 0) {
+            $('#pendingRaidModal').modal('show')
+          } else if ($(".chosen-member").length > 2) {
+            $('#tooManyPlayersModal').modal('show')
+          } else if ($(".selected-level").length != 1) {
+            $('#noLevelSelectedModal').modal('show')
+          } else {
+            level = $(".selected-level").attr('id').substr(5)
+            $(".chosen-member").each(function(){
+              partners.push(this.id.substr(1));
+            })
+            for (i = 0; i < 2-$(".chosen-member").length; i++) {
+              partners.push(undefined)
+            }
+            var p = document.forms['raid_form_paramters']
+            p.elements["level"].value = level
+            p.elements["partner1"].value = partners[0]
+            p.elements["partner2"].value = partners[1]
+            // document.getElementById("raid_form_paramters").submit()
+            // raidInviteSocket.send(JSON.stringify({
+            //     'invite': "True",
+            // }));
+            submitInvites()
+          }
+        });
+
+        submitInvites = function() {
+          $.ajax({
+            type: "POST",
+            url: "{% url 'game-raid-stage' rID=user.userID %}",
+            data: $form.serialize(),
+            dataType: "json",
+            success: function(response){
+              if (response['success']) {
+                raidInviteSocket.send(JSON.stringify({
+                    'invite': "True",
+                }));
+                document.getElementById("raid_form_paramters").submit()
+                // window.location.href = "{% url 'game-raid-stage-render' rID=user.userID %}"
+              }
+
+            }
+          });
+          // $("#raid_form_paramters").ajaxSubmit({url: '{% url "game-raid-stage" rID=user.userID %}', type: 'POST'})
+        };
+      </script>
+      <!-- End modal -->
+    </div>
+  </div>
+  <div class="row mb-4">
+    <div class="col bg-light mr-4 rounded">
+      <div class="container mt-4 mb-4">
+        <div class="row">
+          <div class="col">
+            <ul class="list-group">
+              {% for level in levels %}
+                <li class="list-group-item list-group-item-level" id="level{{ forloop.counter }}">
+                  <div class="container">
+                    <div class="row">
+                      <div class="col">
+                        <div class="row"><b>Level {{ forloop.counter }}</b></div>
+                        <div class="row">{{ level.description }}</div>
+                      </div>
+                      <div class="col-2 mr-4 mt-1">
+                        <button type="button" class="btn-level btn btn-primary" id="button-level{{ forloop.counter }}">Select</button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <script type="text/javascript">
+                  $('#button-level{{ forloop.counter }}').click(function(){
+                    $('.btn-level').show()
+                    $('.list-group-item-level').removeClass('active selected-level')
+                    $('#level{{ forloop.counter }}').addClass('active selected-level')
+                    $('#button-level{{ forloop.counter }}').hide()
+                  });
+                  </script>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col bg-light rounded">
+      <div class="container mt-4 mb-4">
+        <div class="row">
+          <div class="col">
+            <ul class="list-group">
+            {% if members %}
+              {% for member in members %}
+                <li class="list-group-item list-group-item-member" id="m{{ member.userID }}">
+                  <div class="container">
+                    <div class="row">
+                      <div class="col">
+                        <div class="row"><b>{{ member.name }}</b></div>
+                        <div class="row">Level: {{ member.level }}</div>
+                      </div>
+                      <div class="col-2 mr-4 mt-1">
+                        <button type="button" class="btn btn-primary" id="button-member{{ forloop.counter0 }}">Select</button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <script type="text/javascript">
+                  $("#button-member{{ forloop.counter0 }}").click(function(){
+                    // $('.list-group-item-member').removeClass('active')
+                    if ($('#m{{ member.userID }}').hasClass('active')) {
+                      $('#m{{ member.userID }}').removeClass('active')
+                      $('#m{{ member.userID }}').removeClass('chosen-member')
+                      $('#button-member{{ forloop.counter0 }}').removeClass('btn-light')
+                      $('#button-member{{ forloop.counter0 }}').addClass('btn-primary')
+                      $('#button-member{{ forloop.counter0 }}').html("Select")
+                    } else {
+                      $('#m{{ member.userID }}').addClass('active')
+                      $('#m{{ member.userID }}').addClass('chosen-member')
+                      $('#button-member{{ forloop.counter0 }}').removeClass('btn-primary')
+                      $('#button-member{{ forloop.counter0 }}').addClass('btn-light')
+                      $('#button-member{{ forloop.counter0 }}').html("Remove")
+                    }
+                    // $('#member{{ forloop.counter0 }}').attr('id', 'chosen-members')
+                  });
+                </script>
+              {% endfor %}
+            {% else %}
+              <li class="list-group-item">
+                <div class="container">
+                  <div class="row">
+                    <div class="col">
+                      Invite players from your guild to help you fight monsters.
+                    </div>
+                    <div class="col-4 mr-4 mt-1">
+                      <a class="btn btn-primary" href="{% url 'game-guild' %}">Go to Guild</a>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mb-4">
+    <div class="col">
+      <h2>Join a Raid</h2>
+      <h4>Raid invitations from your guild members will appear here.</h4>
+      <div class="col bg-light rounded">
+        <div class="row">
+          <div class="col">
+            <ul class="list-group mt-4 mb-4" id="inviteUL">
+            </ul>
+            <script type="text/javascript">
+              var raidInviteSocket;
+              if ("{{ guildID }}" != "") {
+                raidInviteSocket = new WebSocket('ws://' + window.location.host +
+                '/ws/raid-invite/' + {{ guildID }} + '/');
+                raidInviteSocket.onopen = function(e) {
+                  console.log('Connected')
+                }
+
+                raidInviteSocket.onmessage = function(e) {
+
+                  var data = JSON.parse(e.data);
+                  var invite = data['invite'];
+                  if (invite == "True") {
+                    getInvites()
+                  }
+                };
+
+                raidInviteSocket.onclose = function(e) {
+                  console.error('socket closed');
+                };
+              };
+
+
+              function getInvites(){
+                $.ajax({
+                  type: "GET",
+                  url: "{% url 'game-raid-get-invites' %}",
+                  dataType: "json",
+                  success: function(response){
+                    var inviteDiv = document.getElementById("inviteUL");
+                    while (inviteDiv.firstChild) {
+                        inviteDiv.removeChild(inviteDiv.firstChild);
+                    }
+                    if (response["invites"] == "") {
+                      var div = document.createElement("UL")
+                      div.className = "list-group-item ml-2 mr-2"
+                      div.innerHTML = "You have no pending invites."
+                      inviteDiv.appendChild(div)
+                    } else {
+                      response["invites"].forEach(function(invite){
+                        var newRow = document.createElement("UL")
+                        var senderUsername = invite["senderUsername"]
+                        var senderID = invite["senderID"]
+                        newRow.className = "list-group-item ml-2 mr-2 raid-invite align-middle"
+                        newRow.innerHTML = `<div class="spinner-grow text-primary align-middle" role="status"></div> ${senderUsername} has invited you to a raid.`
+                        inviteDiv.appendChild(newRow)
+
+                        var joinBtn = document.createElement("button")
+                        joinBtn.className = "join-raid-btn btn btn-primary ml-4 align-middle"
+                        joinBtn.innerHTML = "Join Raid"
+                        joinBtn.id = `${senderID}`
+                        newRow.appendChild(joinBtn)
+                      })
+                    }
+                  }
+                });
+              };
+              $(document).on('click', '.join-raid-btn', function() {
+                window.location.href = `{% url 'game-raid-join' %}?id=${this.id}`
+              });
+
+              window.onload = getInvites();
+              // window.setInterval(function(){ getInvites(); }, 50000)
+            </script>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

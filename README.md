@@ -19,3 +19,10 @@ To run the container:
 ```bash
 sudo docker-compose up
 ```
+
+To connect to the database:
+```bash
+docker-compose exec db mysql -u root -h localhost -P 3306 -p
+enter password in prompt
+USE myDB;
+```

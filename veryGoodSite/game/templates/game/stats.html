@@ -1,0 +1,76 @@
+{% extends "game/base.html" %}
+{% load crispy_forms_tags %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
+{% block content %}
+<script type="text/javascript">
+  $(".nav-item").removeClass('active')
+  $("#statsNavLink").addClass('active')
+</script>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="personal-rank-tab" data-toggle="tab" href="#personal-rank" role="tab" aria-controls="personal rank" aria-selected="true">Global Player Rank</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="guild-rank-tab" data-toggle="tab" href="#guild-rank" role="tab" aria-controls="guild rank" aria-selected="false">Global Guild Rank</a>
+  </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="personal-rank" role="tabpanel" aria-labelledby="personal rank tab">
+    <h1>Current Rank: {{ rank }}</h1>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">User</th>
+            <th scope="col">Character</th>
+            <th scope="col">Level</th>
+            <th scope="col">Gold</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for account in top100 %}
+            <tr>
+              <th scope="row">{{ forloop.counter }}</th>
+              <td>{{ account.username }}</td>
+              <td>{{ account.charName }}</td>
+              <td>{{ account.level }}</td>
+              <td>{{ account.gold }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+  </div>
+  <div class="tab-pane fade" id="guild-rank" role="tabpanel" aria-labelledby="guild rank tab">
+    {% if guild %}
+    <h1>Guild Rank: {{ guildRank }}</h1>
+    {% endif %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Guild Name</th>
+          <th scope="col">Members</th>
+          <th scope="col">Gold</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for guild in top100Guilds %}
+          <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ guild.guildName }}</td>
+            <td>{{ guild.members }}</td>
+            <td>{{ guild.gold }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock content %}

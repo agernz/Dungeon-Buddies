@@ -26,11 +26,23 @@ SECRET_KEY = '1&ffsh2*sb6*r_uih1&!1juh%y_7xf+e)%2b9--4!*-41&*&gw'
 DEBUG = False
 
 ALLOWED_HOSTS = ['ec2-18-219-152-5.us-east-2.compute.amazonaws.com','0.0.0.0']
-
+ASGI_APPLICATION = 'veryGoodSite.routing.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+        },
+    },
+}
 
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
+    'register.apps.RegisterConfig',
+    'game.apps.GameConfig',
+    'crispy_forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -107,6 +119,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'register.authenticate.authBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+AUTH_USER_MODEL = 'register.goodUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
@@ -126,3 +144,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+LOGIN_URL = 'register-login'

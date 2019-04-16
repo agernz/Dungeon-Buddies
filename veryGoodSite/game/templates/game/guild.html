@@ -1,0 +1,97 @@
+{% extends "game/base.html" %}
+{% load crispy_forms_tags %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
+{% block content %}
+<script type="text/javascript">
+  $(".nav-item").removeClass('active')
+  $("#guildNavLink").addClass('active')
+</script>
+{% if guildName %}
+<div class="row">
+  <div class="col">
+    <h1>{{ guildName }}</h1>
+  </div>
+  <div class="col-3 mt-2">
+    <a class="btn-sm btn-danger" href="{% url 'game-guild' %}?leave=1">Leave Guild</a>
+  </div>
+</div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">User</th>
+        <th scope="col">Character</th>
+        <th scope="col">Level</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for member in members %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{ member.name }}</td>
+          <td>{{ member.charName }}</td>
+          <td>{{ member.level }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if is_admin %}
+    <h3>Add Member</h3>
+    <div class="content-section">
+      <form action="{% url 'game-guild-invite' %}" method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+          <legend class="border-bottom mb-4:"></legend>
+          {{ inviteForm|crispy }}
+        </fieldset>
+        <div class="form-group">
+          <button class="btn btn-outline-info" type="submit">Submit</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+{% else %}
+  <h1>Guild Invites</h1>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Guild Name</th>
+        <th scope="col">Number of Members</th>
+        <th scope="col">Join?</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for guild in guilds %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{ guild.name }}</td>
+          <td>{{ guild.num_members }}</td>
+          <td><a href="{% url 'game-guild-join' %}?gID={{ guild.gID }}">join</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <h1>Create Guild</h1>
+  <div class="content-section">
+    <form action="{% url 'game-guild-create' %}" method="POST">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <legend class="border-bottom mb-4:"></legend>
+        {{ form|crispy }}
+      </fieldset>
+      <div class="form-group">
+        <button class="btn btn-outline-info" type="submit">Submit</button>
+      </div>
+    </form>
+  </div>
+{% endif %}
+
+{% endblock content %}

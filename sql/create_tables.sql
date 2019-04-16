@@ -1,0 +1,82 @@
+CREATE TABLE Account (
+  userID INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  username VARCHAR(30) NOT NULL UNIQUE,
+  password VARCHAR(120) NOT NULL,
+  characterName VARCHAR(30) NOT NULL,
+  experience INT UNSIGNED default 0,
+  gold INT UNSIGNED default 0,
+  guildID INT UNSIGNED NULL,
+  level INT UNSIGNED default 1,
+  health INT UNSIGNED default 1,
+  attack INT UNSIGNED default 1,
+  defense INT UNSIGNED default 1,
+  speed INT UNSIGNED default 1,
+  skillPoints INT UNSIGNED default 0,
+  PRIMARY KEY (userID)
+);
+
+CREATE TABLE Guild (
+  guildID INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(120) NOT NULL,
+  owner INT UNSIGNED NOT NULL,
+  PRIMARY KEY (guildID),
+  FOREIGN KEY (owner) REFERENCES Account (userID)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE Member (
+  userID INT UNSIGNED NOT NULL,
+  guildID INT UNSIGNED NOT NULL,
+  pending SMALLINT UNSIGNED default 1,
+  admin SMALLINT UNSIGNED default 0,
+  PRIMARY KEY (userID, guildID),
+  FOREIGN KEY (userID) REFERENCES Account (userID)
+    ON DELETE CASCADE,
+  FOREIGN KEY (guildID) REFERENCES Guild (guildID)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE Invite (
+  senderID INT UNSIGNED NOT NULL,
+  recieveID INT UNSIGNED NOT NULL,
+  time TIMESTAMP NOT NULL, 
+  PRIMARY KEY (senderID, recieveID),
+  FOREIGN KEY (senderID) REFERENCES Account (userID)
+    ON DELETE CASCADE,
+  FOREIGN KEY (recieveID) REFERENCES Account (userID)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE Raid (
+  userID1 INT UNSIGNED NOT NULL,
+  userID2 INT UNSIGNED NULL,
+  userID3 INT UNSIGNED NULL,
+  health1 INT UNSIGNED default 0,
+  health2 INT UNSIGNED default 0,
+  health3 INT UNSIGNED default 0,
+  move1 INT UNSIGNED NULL,
+  move2 INT UNSIGNED NULL,
+  move3 INT UNSIGNED NULL,
+  raidLevel INT UNSIGNED NOT NULL,
+  stageing SMALLINT UNSIGNED default 1,
+  PRIMARY KEY (userID1),
+  FOREIGN KEY (userID1) REFERENCES Account (userID)
+    ON DELETE CASCADE,
+  FOREIGN KEY (userID2) REFERENCES Account (userID)
+    ON DELETE CASCADE,
+  FOREIGN KEY (userID3) REFERENCES Account (userID)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE Monster (
+  monsterID INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  raidID INT UNSIGNED NOT NULL,
+  name VARCHAR(30) NOT NULL,
+  health INT UNSIGNED default 1,
+  attack INT UNSIGNED default 1,
+  defense INT UNSIGNED default 1,
+  speed INT UNSIGNED default 1,
+  PRIMARY KEY (monsterID),
+  FOREIGN KEY (raidID) REFERENCES Raid (userID1)
+    ON DELETE CASCADE
+);

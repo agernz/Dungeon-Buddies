@@ -1,0 +1,260 @@
+{% extends "game/base.html" %}
+{% load static %}
+{% block menu %}
+  {% if user.is_authenticated %}
+    {% include "game/navbar-logged-in.html" %}
+  {% else %}
+    {% include "game/navbar-logged-out.html" %}
+  {% endif %}
+{% endblock %}
+{% block content %}
+<script type="text/javascript">
+  $(".nav-item").removeClass('active')
+  $("#indexNavLink").addClass('active')
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+  <div>
+    {% if user.is_authenticated %}
+      <div class="container">
+        <div class="row">
+          <div class="col ml-0 mr-4 bg-light rounded">
+            <div class="container mt-2 mb-2">
+              <div class="row mb-4">
+                <div class="col-md-2 col-lg-2 col-sm-4 col-xs-4 col-xl-2">
+                  <img src="{% static 'game/archer.png' %}" alt="profile picture" class="img-thumbnail">
+                </div>
+                <div class="col-8">
+                  <h4 class="row">
+                    Username: {{ userInfo.username }}
+                  </h4>
+                  <h4 class="row">
+                    Character: {{ userInfo.characterName }}
+                  </h4>
+                </div>
+              </div>
+              <div class="row">
+                <div class = "col-6 mb-2">
+                  <img src="{% static 'game/level.png' %}" alt="level_pic" class="img-fluid">
+                  Level: {{userInfo.level }}
+                </div>
+                <div class="col-6" id="exp" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Earn experience to increase your level.">
+                  <img src="{% static 'game/resized/exp.png' %}" alt="exp-pic" class="img-fluid"> Exp:
+                </div>
+              </div>
+              <div class = "row mb-2">
+                <div class="col-6 mt-2">
+                  <img src="{% static 'game/resized/gold.png' %}" alt="gold-pic" class="img-fluid">
+                  Gold: {{ userInfo.gold }}
+                </div>
+                <div class="col-6" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Earn skill points by leveling up.">
+                  <img src="{% static 'game/key.png' %}" alt="skill_pic" class="img-fluid">
+                  Skill Points Available: <span id="skillz">{{ userInfo.skillPoints }}</span>
+                </div>
+              </div>
+              <br>
+              <div class = "row mb-2">
+                <div class="col-6">
+                  <div style="font-weight: bold">
+                    Stats
+                  </div>
+                </div>
+              </div>
+              <div class = "row mb-2">
+                <div class="col-6" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Spend skill points to increase your player stats.">
+                  <img src="{% static 'game/sameHeight/beer.png' %}" alt="health-pic" class="img-fluid">
+                  Health: <span id="health">{{ userInfo.health }}</span>
+                </div>
+                <div class="col-6" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Spend skill points to increase your player stats.">
+                  <img src="{% static 'game/sameHeight/sword.png' %}" alt="attack-pic" class="img-fluid">
+                  Attack: <span id='atck'>{{ userInfo.attack }}</span>
+                </div>
+              </div>
+              {% if userInfo.skillPoints %}
+              <div class="row mb-2">
+                <div class="col-6">
+                  <a onclick='incStat(1)' class="btn-sm btn-info btn-lg" role="button" aria-pressed="true">Add Health</a>
+                </div>
+                <div class="col-6">
+                  <a onclick='incStat(2)' class="btn-sm btn-info btn-lg" role="button" aria-pressed="true">Add Attack</a>
+                </div>
+              </div>
+              {% endif %}
+              <div class = "row mb-2">
+                <div class="col-6 mt-1" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Spend skill points to increase your player stats.">
+                  <img src="{% static 'game/resized/shield.png' %}" alt="shield-pic" class="img-fluid">
+                  Defense: <span id="def">{{ userInfo.defense }}</span>
+                </div>
+                <div class="col-6" data-toggle="tooltip" data-placement="top" data-delay='{"show":"750", "hide":"100"}' title="Spend skill points to increase your player stats.">
+                  <img src="{% static 'game/sameHeight/boot.png' %}" alt="speed-pic" class="img-fluid">
+                  Speed: <span id="speed">{{ userInfo.speed }}</span>
+                </div>
+              </div>
+              {% if userInfo.skillPoints %}
+              <div class="row mb-2">
+                <div class="col-6">
+                  <a onclick='incStat(3)' class="btn-sm btn-info btn-lg" role="button" aria-pressed="true">Add Defense</a>
+                </div>
+                <div class="col-6">
+                  <a onclick='incStat(4)' class="btn-sm btn-info btn-lg" role="button" aria-pressed="true">Add Speed</a>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          <!-- <div class="col ml-0 mr-0 bg-light rounded">
+            <h4 class="mt-2 text-center">
+              Raid Invites
+            </h4>
+            <div class="row">
+              <div class="col">
+                <ul class="list-group mb-4" id="inviteUL">
+                </ul>
+                <script type="text/javascript">
+                  var raidInviteSocket = new WebSocket('ws://' + window.location.host +
+                  '/ws/raid-invite/' + {{ guildID }} + '/');
+                  raidInviteSocket.onopen = function(e) {
+                    console.log('Connected')
+                  }
+
+                  raidInviteSocket.onmessage = function(e) {
+                    var data = JSON.parse(e.data);
+                    var invite = data['invite'];
+                    if (invite == "True") {
+                      getInvites()
+                    }
+                  };
+
+                  raidInviteSocket.onclose = function(e) {
+                    console.error('socket closed');
+                  };
+
+
+                  function getInvites(){
+                    $.ajax({
+                      type: "GET",
+                      url: "{% url 'game-raid-get-invites' %}",
+                      dataType: "json",
+                      success: function(response){
+                        var inviteDiv = document.getElementById("inviteUL");
+                        while (inviteDiv.firstChild) {
+                            inviteDiv.removeChild(inviteDiv.firstChild);
+                        }
+                        if (response["invites"] == "") {
+                          var div = document.createElement("UL")
+                          div.className = "list-group-item ml-2 mr-2"
+                          div.innerHTML = "You have no pending invites."
+                          inviteDiv.appendChild(div)
+                        } else {
+                          response["invites"].forEach(function(invite){
+                            var newRow = document.createElement("UL")
+                            var senderUsername = invite["senderUsername"]
+                            var senderID = invite["senderID"]
+                            newRow.className = "list-group-item ml-2 mr-2 raid-invite align-middle"
+                            newRow.innerHTML = `<div class="spinner-grow text-primary align-middle" role="status"></div> ${senderUsername} has invited you to a raid.`
+                            inviteDiv.appendChild(newRow)
+
+                            var joinBtn = document.createElement("button")
+                            joinBtn.className = "join-raid-btn btn btn-primary ml-4 align-middle"
+                            joinBtn.innerHTML = "Join Raid"
+                            joinBtn.id = `${senderID}`
+                            newRow.appendChild(joinBtn)
+                          })
+                        }
+                      }
+                    });
+                  };
+                  $(document).on('click', '.join-raid-btn', function() {
+                    window.location.href = `{% url 'game-raid-join' %}?id=${this.id}`
+                  });
+
+                  window.onload = getInvites();
+                  // window.setInterval(function(){ getInvites(); }, 50000)
+                </script>
+              </div>
+            </div>
+            <script type="text/javascript">
+              function getInvites(){
+                $.ajax({
+                  type: "GET",
+                  url: "{% url 'game-raid-get-invites' %}",
+                  dataType: "json",
+                  success: function(response){
+                    var inviteDiv = document.getElementById("inviteList");
+                    while (inviteDiv.firstChild) {
+                        inviteDiv.removeChild(inviteDiv.firstChild);
+                    }
+                    response["invites"].forEach(function(invite){
+                      var div = document.createElement("DIV")
+                      var sender = invite["senderUsername"]
+                      div.innerHTML = `${sender} has invited you on a raid. Join now!`
+                      inviteDiv.appendChild(div)
+                    })
+                  }
+                });
+              };
+              window.onload = getInvites;
+              window.setInterval(function(){ getInvites(); }, 50000)
+            </script>
+          </div> -->
+        </div>
+        <br>
+      </div>
+      <script type="text/javascript">
+        function incStat(bID) {
+          $.ajax({
+            type: "GET",
+            url: "{% url 'game-user-stats' %}?bID=" + bID,
+            dataType: "json",
+            success: function (response) {
+              document.getElementById("health").innerHTML = response.health;
+              document.getElementById("atck").innerHTML = response.attack;
+              document.getElementById("def").innerHTML = response.defense;
+              document.getElementById("speed").innerHTML = response.speed;
+              document.getElementById("skillz").innerHTML = response.skillPoints;
+            }
+          });
+        }
+        function getExp() {
+          expNeeded = {{userInfo.level}} * 5;
+          experienceText = "Exp: " + String({{userInfo.exp}}) + "/" + String(expNeeded);
+          percentage = parseInt(({{userInfo.exp}}/expNeeded)*100, 10)
+          text = experienceText;
+          exp.innerHTML = `
+            <div class="row">
+              <img src=\"{% static 'game/resized/exp.png' %}\" alt=\"exp-pic\" class=\"img-fluid\">
+              <div class="col">
+                <div class="progress" style="height: 20px; background-color: Gray">
+                  <div class="progress-bar bg-info" role="progressbar" style="width: ${percentage}%;" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">${experienceText}</div>
+                </div>
+              </div>
+            </div>
+          `
+        }
+        window.onload = getExp();
+      </script>
+    {% else %}
+      <div class="container h-100">
+        <div class="row align-items-center h-100">
+          <div class="col-lg-8 col-sm colm-md mx-auto mt-3">
+            <div class="jumbotron">
+              <h1 class="display-4">Welcome, Slayer!</h1>
+              <p class="lead">Collect items. Level up. Slay monsters.</p>
+              <hr class="my-4">
+              <p>Dungeon Buddies is a simple online multiplayer RPG. Play solo or with your friends!</p>
+              <a href="{% url 'register-index' %}" class="btn btn-primary btn-md" >Register</a>
+              <a href="{% url 'register-login' %}" class="btn btn-primary btn-md">Sign In</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  <div class="fixed-bottom" style="padding-bottom: 50px;">
+    <div class="text-center">
+      <img src="{% static 'game/rsz_corn.png' %}" alt="level_pic" class="img-fluid">
+      Made with love and corn for Abdu's CS411 Spring 2019
+    </div>
+  </div>
+{% endblock content %}
