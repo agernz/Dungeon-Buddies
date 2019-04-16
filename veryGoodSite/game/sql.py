@@ -383,10 +383,10 @@ def generateMonsters(userID, raid_level):
         for i in range(num_monsters):
             m_name = r.choice(monster_names)
             m_level = max(party_level, 5 * (2*raid_level - 2))
-            m_health = max(r.randint(0, m_level) // num_monsters, 1)
-            m_attack = max(r.randint(0, m_level // 3) // num_monsters, 1)
-            m_defense = max(r.randint(0, m_level // 3) // num_monsters, 1)
-            m_speed = max(r.randint(0, m_level // 3) // num_monsters, 1)
+            m_health = max(r.randint(m_level // 2, m_level) // num_monsters, 1)
+            m_attack = max(r.randint(m_level // 3, m_level // 2) // num_monsters, 1)
+            m_defense = max(r.randint(m_level // 3, m_level // 2) // num_monsters, 1)
+            m_speed = max(r.randint(m_level // 3, m_level // 2) // num_monsters, 1)
             c.execute("INSERT INTO Monster(raidID, name, health, attack, defense, \
                       speed) VALUES(%s, %s, %s, %s, %s, %s);",
                       [userID, m_name, m_health, m_attack, m_defense, m_speed])
