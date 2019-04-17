@@ -136,11 +136,13 @@ def joinGuild(request):
 
 @login_required
 def raidPage(request):
-    if request.GET.get('cancel') == '1':
+    raid = getRaid(request.user.userID)
+    if request.GET.get('cancel') == '1' and raid and raid['stageing'] == 1:
         deleteInvites(request.user.userID)
         deleteRaid(request.user.userID)
+    elif request.GET.get('cancel') == '1' and raid and raid['stageing'] == 0:
+        messages.warning(request, "Cannot cancel active raid")
 
-    raid = getRaid(request.user.userID)
     if raid and raid['stageing'] == 1:
         return redirect("game-raid-stage", rID=raid['user1'])
     elif raid and raid['stageing'] == 0:
