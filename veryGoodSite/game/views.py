@@ -323,6 +323,10 @@ def raidRender(request, rID):
     if raid['stageing'] == 1 and uid == pk:
         deleteInvites(uid)
         raid['stageing'] = 0
+        if raid['user2'] and raid['health2'] == 0:
+            raid['user2'] = None
+        elif raid['user3'] and raid['health3'] == 0:
+            raid['user3'] = None
         updateRaid(raid)
     elif raid['stageing'] == 1:
         redirect('game-raid-stage', rID=pk)
