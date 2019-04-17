@@ -74,8 +74,8 @@
           </div>
         </div>
       </div> -->
+      <!-- End modal -->
       <form id="raid_form_paramters" action="{% url 'game-raid-stage-render' rID=user.userID %}" method="POST">
-      <!-- <form id="raid_form_paramters"> -->
           {% csrf_token %}
           <input type="hidden" name="level" value=""/>
           <input type="hidden" name="partner1" value=""/>
@@ -120,16 +120,17 @@
                       'invite': "True",
                   }));
                 };
-                document.getElementById("raid_form_paramters").submit()
+                if ($(".chosen-member").length == 0) {
+                  window.location.href = "{% url 'game-raid-render' user.userID %}"
+                } else {
+                  document.getElementById("raid_form_paramters").submit()
+                }
                 // window.location.href = "{% url 'game-raid-stage-render' rID=user.userID %}"
               }
-
             }
           });
-          // $("#raid_form_paramters").ajaxSubmit({url: '{% url "game-raid-stage" rID=user.userID %}', type: 'POST'})
         };
       </script>
-      <!-- End modal -->
     </div>
   </div>
   <div class="row mb-4">
@@ -188,7 +189,6 @@
                 </li>
                 <script type="text/javascript">
                   $("#button-member{{ forloop.counter0 }}").click(function(){
-                    // $('.list-group-item-member').removeClass('active')
                     if ($('#m{{ member.userID }}').hasClass('active')) {
                       $('#m{{ member.userID }}').removeClass('active')
                       $('#m{{ member.userID }}').removeClass('chosen-member')
@@ -202,7 +202,6 @@
                       $('#button-member{{ forloop.counter0 }}').addClass('btn-light')
                       $('#button-member{{ forloop.counter0 }}').html("Remove")
                     }
-                    // $('#member{{ forloop.counter0 }}').attr('id', 'chosen-members')
                   });
                 </script>
               {% endfor %}

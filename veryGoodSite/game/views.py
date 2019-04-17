@@ -232,13 +232,11 @@ def raidStage(request, rID):
         }
 
         if createRaid(request.user.userID, level, uInfo["health"]):
-            # context['success'] = 1;
             return JsonResponse({"success": 1})
-            # return render(request, 'game/raid-staging.html', context)
         else:
             messages.warning(request, "Could not create Raid")
             return redirect('game-raid')
-            # return JsonResponse(context)
+
     else:
         raid = getRaid(rID)
         if not raid:
