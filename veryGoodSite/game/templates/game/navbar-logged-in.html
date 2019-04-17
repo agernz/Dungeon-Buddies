@@ -18,6 +18,16 @@
       <li class="nav-item active" id="statsNavLink">
         <a class="nav-link" href="{% url 'game-stats' %}">Stats </a>
       </li>
+      <li class="nav-item dropdown" id="themesDropdown">
+        <a class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Themes
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item theme-link" data-theme="litera">Light Mode</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item theme-link" data-theme="darkly">Dark Mode</a>
+        </div>
+      </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'register-logout' %}"><i class="fas fa-sign-out-alt"></i> Log out </a>
       </li>

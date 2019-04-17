@@ -7,15 +7,43 @@
 
   <!-- Bootstrap CSS -->
   <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/4.3.1/litera/bootstrap.min.css">
-  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/4.3.1/darkly/bootstrap.min.css"> -->
-  <link rel="stylesheet" href="" id="theme-sheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/4.3.1/darkly/bootstrap.min.css" id="theme-sheet-dark">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/4.3.1/litera/bootstrap.min.css" id="theme-sheet-light">
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script type="text/javascript">
+    function supports_html5_storage() {
+      try {
+        return 'localStorage' in window && window['localStorage'] !== null;
+      } catch (e) {
+        return false;
+      }
+    }
+    var supports_storage = supports_html5_storage();
+    if (supports_storage) {
+      if (localStorage.night == "darkly") {
+        document.styleSheets[1].disabled = true;
+      }
+      $(function(){
+        $('.theme-link').click(function(){
+          var theme = $(this).attr('data-theme')
+          if (theme != localStorage.night) {
+            localStorage.night = theme
+            $('body').fadeOut(400, function(){
+              location.reload(true);
+            });
+          };
+        });
+      });
+    }
+
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
   <title>Dungeon Buddies</title>
+
 </head>
 {% block menu %}
   {% if user.is_authenticated %}
@@ -25,6 +53,11 @@
   {% endif %}
 {% endblock %}
 <body>
+  <script type="text/javascript">
+    if (!supports_storage) {
+      $("#themesDropdown").hide()
+    }
+  </script>
   <div class="container mt-2">
     {% if messages %}
     {% for m in messages %}
