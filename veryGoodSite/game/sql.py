@@ -154,7 +154,7 @@ def getTop100Guilds():
     try:
         c.execute(" SELECT  G.name NAME, COUNT(M.userID) MEMBERS, SUM(A.gold) GOLD \
                     FROM    Guild G, Member M, Account A \
-                    WHERE   G.guildID = M.guildID AND M.userID = A.userID \
+                    WHERE   G.guildID = M.guildID AND M.userID = A.userID AND M.pending=0 \
                     GROUP BY G.guildID \
                     ORDER BY GOLD DESC LIMIT 100;")
         guildInfo = c.fetchall()
