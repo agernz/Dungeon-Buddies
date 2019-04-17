@@ -81,6 +81,7 @@ def getGuildRank(guildID):
                                     FROM Guild G, Member M, Account A \
                                     WHERE G.guildID = M.guildID \
                                     AND M.userID = A.userID \
+                                    AND M.pending=0 \
                                     GROUP BY G.guildID \
                                     ORDER BY GOLD DESC) A1, \
                                     (SELECT G.guildID, COUNT(M.userID) \
